@@ -1,0 +1,110 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase";
+
+const APP_NAME = "Probably Leg Day";
+
+export default function ResetPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+
+    if (!email.trim()) {
+      setError("Email is required.");
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createClient();
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      { redirectTo: `${window.location.origin}/auth/login` }
+    );
+
+    if (resetError) {
+      setError(resetError.message);
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
+    setLoading(false);
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
+      <div className="w-full max-w-md">
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 shadow-xl">
+          <h1 className="text-center text-2xl font-bold text-white">
+            {APP_NAME}
+          </h1>
+          <p className="mt-1 text-center text-sm text-zinc-400">
+            Reset your password
+          </p>
+
+          {success ? (
+            <div className="mt-8 space-y-4">
+              <div className="rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+                Check your email for a link to reset your password. If you don&apos;t see it, check your spam folder.
+              </div>
+              <Link
+                href="/auth/login"
+                className="block w-full rounded-lg bg-[#f97316] px-4 py-3 text-center font-semibold text-black transition hover:bg-[#ea580c]"
+              >
+                Back to log in
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+              {error && (
+                <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-zinc-300">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1.5 w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3 text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-lg bg-[#f97316] px-4 py-3 font-semibold text-black transition hover:bg-[#ea580c] disabled:opacity-50"
+              >
+                {loading ? "Sending…" : "Send reset link"}
+              </button>
+            </form>
+          )}
+
+          {!success && (
+            <p className="mt-6 text-center text-sm text-zinc-400">
+              <Link href="/auth/login" className="font-medium text-[#f97316] hover:underline">
+                Back to log in
+              </Link>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
