@@ -53,11 +53,11 @@ export default function ProgressRecordsPage() {
   if (loading) return <PageSkeleton />;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader title="Records" description="Personal records across exercises." />
         <p className="mt-2 text-sm">
-          <Link href="/weight" className="text-[#f97316] hover:underline">
+          <Link href="/weight" className="text-theme-accent hover:underline">
             Weight tracking →
           </Link>
         </p>
@@ -75,16 +75,16 @@ export default function ProgressRecordsPage() {
             {rows.map((r) => (
               <li
                 key={r.id}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 sm:px-5"
+                className="rounded-xl border border-theme-border bg-theme-surface/50 px-4 py-3 sm:px-5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     href={`/progress/exercise/${r.exercise_id}`}
-                    className="font-medium text-white hover:text-[#f97316]"
+                    className="font-medium text-theme-text-primary hover:text-theme-accent"
                   >
                     {r.exercise_name}
                   </Link>
-                  <span className="text-sm text-zinc-500">
+                  <span className="text-sm text-theme-text-muted">
                     {new Date(r.achieved_at).toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",
@@ -92,7 +92,7 @@ export default function ProgressRecordsPage() {
                     })}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-zinc-400">
+                <p className="mt-1 text-sm text-theme-text-muted">
                   {r.record_type.replace(/_/g, " ")} ·{" "}
                   {r.record_type === "max_weight"
                     ? `${kgToLbs(r.value)?.toFixed(1) ?? r.value} lbs`

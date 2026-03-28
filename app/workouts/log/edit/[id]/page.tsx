@@ -505,7 +505,7 @@ export default function EditWorkoutPage() {
 
   if (userId === null || loading || !workoutLog) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
@@ -515,13 +515,13 @@ export default function EditWorkoutPage() {
     workoutLog.duration_seconds ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <Link
               href={`/workouts/history/${id}`}
-              className="text-sm text-zinc-400 hover:text-white"
+              className="text-sm text-theme-text-muted hover:text-theme-text-primary"
             >
               ← Back to workout
             </Link>
@@ -529,24 +529,24 @@ export default function EditWorkoutPage() {
               type="text"
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
-              className="mt-1 block w-full bg-transparent text-xl font-bold text-white focus:outline-none focus:ring-0"
+              className="mt-1 block w-full bg-transparent text-xl font-bold text-theme-text-primary focus:outline-none focus:ring-0"
             />
-            <p className="text-2xl font-bold tabular-nums text-[#f97316]">
+            <p className="text-2xl font-bold tabular-nums text-theme-accent">
               {formatDuration(durationSeconds)}
             </p>
           </div>
         </div>
 
         {restTimer && (
-          <div className="mb-4 flex items-center justify-between rounded-xl border-2 border-[#f97316] bg-[#f97316]/10 px-4 py-3">
-            <span className="font-semibold text-[#f97316]">
+          <div className="mb-4 flex items-center justify-between rounded-xl border-2 border-theme-accent bg-theme-accent/10 px-4 py-3">
+            <span className="font-semibold text-theme-accent">
               Rest: {formatDuration(restTimer.secondsLeft)}
               {restTimer.label ? ` — ${restTimer.label}` : ""}
             </span>
             <button
               type="button"
               onClick={() => setRestTimer(null)}
-              className="rounded-lg bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+              className="rounded-lg bg-theme-border/90 px-3 py-1.5 text-sm text-theme-text-muted hover:bg-theme-border"
             >
               Dismiss
             </button>
@@ -557,21 +557,21 @@ export default function EditWorkoutPage() {
           {logEntries.map((entry, exIndex) => (
             <div
               key={`${entry.exercise.id}-${exIndex}`}
-              className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+              className="rounded-xl border border-theme-border bg-theme-surface/50 p-4"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="font-semibold text-white">{entry.exercise.name}</p>
+                <p className="font-semibold text-theme-text-primary">{entry.exercise.name}</p>
                 <button
                   type="button"
                   onClick={() => removeExercise(exIndex)}
-                  className="rounded p-1 text-zinc-500 hover:bg-zinc-700 hover:text-red-400"
+                  className="rounded p-1 text-theme-text-muted hover:bg-theme-border hover:text-red-400"
                   aria-label="Remove exercise"
                 >
                   Remove
                 </button>
               </div>
               {entry.templateTarget && (
-                <p className="mt-0.5 text-sm text-zinc-500">
+                <p className="mt-0.5 text-sm text-theme-text-muted">
                   Target: {entry.templateTarget.target_sets} sets
                   {entry.exercise.type === "reps_sets"
                     ? ` × ${entry.templateTarget.target_reps ?? "?"} reps`
@@ -588,8 +588,8 @@ export default function EditWorkoutPage() {
                     onClick={() => setWeightLoggingChoice(exIndex, "total")}
                     className={`rounded-lg px-3 py-1.5 text-sm ${
                       entry.weightLoggingChoice === "total"
-                        ? "bg-[#f97316] text-[#0a0a0a]"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                        ? "bg-theme-accent text-theme-on-accent"
+                        : "bg-theme-border/90 text-theme-text-muted hover:bg-theme-border"
                     }`}
                   >
                     Total weight
@@ -599,8 +599,8 @@ export default function EditWorkoutPage() {
                     onClick={() => setWeightLoggingChoice(exIndex, "per_hand")}
                     className={`rounded-lg px-3 py-1.5 text-sm ${
                       entry.weightLoggingChoice === "per_hand"
-                        ? "bg-[#f97316] text-[#0a0a0a]"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                        ? "bg-theme-accent text-theme-on-accent"
+                        : "bg-theme-border/90 text-theme-text-muted hover:bg-theme-border"
                     }`}
                   >
                     Per hand
@@ -611,9 +611,9 @@ export default function EditWorkoutPage() {
                 {entry.sets.map((set, setIndex) => (
                   <div
                     key={setIndex}
-                    className="flex flex-wrap items-center gap-2 rounded-lg bg-zinc-800/50 p-2"
+                    className="flex flex-wrap items-center gap-2 rounded-lg bg-theme-surface/50 p-2"
                   >
-                    <span className="w-8 text-sm text-zinc-500">
+                    <span className="w-8 text-sm text-theme-text-muted">
                       Set {setIndex + 1}
                     </span>
                     {entry.exercise.type === "reps_sets" ? (
@@ -630,7 +630,7 @@ export default function EditWorkoutPage() {
                               parseInt(e.target.value, 10) || null
                             )
                           }
-                          className="h-10 w-20 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                          className="h-10 w-20 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                         />
                         <input
                           type="number"
@@ -649,9 +649,9 @@ export default function EditWorkoutPage() {
                               )
                             )
                           }
-                          className="h-10 w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                          className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                         />
-                        <span className="text-zinc-500">lbs</span>
+                        <span className="text-theme-text-muted">lbs</span>
                       </>
                     ) : (
                       <input
@@ -666,7 +666,7 @@ export default function EditWorkoutPage() {
                             parseInt(e.target.value, 10) || null
                           )
                         }
-                        className="h-10 w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                        className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                       />
                     )}
                     <input
@@ -683,7 +683,7 @@ export default function EditWorkoutPage() {
                           parseInt(e.target.value, 10) || null
                         )
                       }
-                      className="h-10 w-14 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                      className="h-10 w-14 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                     />
                     {entry.templateTarget?.target_rest_seconds ? (
                       <button
@@ -694,7 +694,7 @@ export default function EditWorkoutPage() {
                             entry.exercise.name
                           )
                         }
-                        className="rounded-lg bg-zinc-700 px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-600"
+                        className="rounded-lg bg-zinc-700 px-2 py-1.5 text-xs text-theme-text-muted hover:bg-zinc-600"
                       >
                         Rest timer
                       </button>
@@ -702,7 +702,7 @@ export default function EditWorkoutPage() {
                     <button
                       type="button"
                       onClick={() => removeSet(exIndex, setIndex)}
-                      className="rounded p-1 text-zinc-500 hover:bg-zinc-700 hover:text-red-400"
+                      className="rounded p-1 text-theme-text-muted hover:bg-theme-border hover:text-red-400"
                       aria-label="Remove set"
                     >
                       ×
@@ -713,7 +713,7 @@ export default function EditWorkoutPage() {
               <button
                 type="button"
                 onClick={() => addSet(exIndex)}
-                className="mt-3 w-full rounded-lg border border-dashed border-zinc-600 py-2 text-sm text-zinc-400 hover:border-[#f97316] hover:text-[#f97316]"
+                className="mt-3 w-full rounded-lg border border-dashed border-theme-border/80 py-2 text-sm text-theme-text-muted hover:border-theme-accent hover:text-theme-accent"
               >
                 Add set
               </button>
@@ -723,7 +723,7 @@ export default function EditWorkoutPage() {
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="w-full rounded-xl border-2 border-dashed border-zinc-600 py-4 text-zinc-400 hover:border-[#f97316] hover:text-[#f97316]"
+            className="w-full rounded-xl border-2 border-dashed border-theme-border/80 py-4 text-theme-text-muted hover:border-theme-accent hover:text-theme-accent"
           >
             + Add exercise
           </button>
@@ -734,7 +734,7 @@ export default function EditWorkoutPage() {
             type="button"
             onClick={saveChanges}
             disabled={saving}
-            className="flex-1 rounded-xl bg-[#f97316] py-4 text-lg font-semibold text-[#0a0a0a] hover:bg-[#ea580c] disabled:opacity-50"
+            className="flex-1 rounded-xl bg-theme-accent py-4 text-lg font-semibold text-theme-on-accent hover:bg-theme-accent-hover disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save Changes"}
           </button>
@@ -749,8 +749,8 @@ export default function EditWorkoutPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-800 bg-[#0a0a0a] p-4 shadow-xl">
-              <h2 className="mb-4 text-lg font-bold text-white">
+            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-theme-border bg-theme-bg p-4 shadow-xl">
+              <h2 className="mb-4 text-lg font-bold text-theme-text-primary">
                 Add exercise
               </h2>
               <ExercisePicker

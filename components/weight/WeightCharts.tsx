@@ -77,8 +77,8 @@ export function WeightRangeSelector({
           onClick={() => onChange(r.key)}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
             value === r.key
-              ? "bg-[#f97316] text-[#0a0a0a]"
-              : "border border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              ? "bg-theme-accent text-theme-on-accent"
+              : "border border-theme-border bg-theme-surface/50 text-theme-text-muted hover:bg-theme-border/90 hover:text-theme-text-primary"
           }`}
         >
           {r.label}
@@ -154,12 +154,12 @@ export function DailyWeightLineChart({
                   );
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => <span className="text-zinc-300">{v}</span>} />
+              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => <span className="text-theme-text-muted">{v}</span>} />
               <Line
                 type="monotone"
                 dataKey="target"
                 name="Target"
-                stroke="#71717a"
+                stroke={CHART.secondary}
                 strokeWidth={2}
                 strokeDasharray="6 4"
                 dot={false}
@@ -169,7 +169,7 @@ export function DailyWeightLineChart({
                 type="monotone"
                 dataKey="weekAvg"
                 name="Weekly avg"
-                stroke="#fafafa"
+                stroke="var(--text-primary)"
                 strokeWidth={2}
                 dot={false}
                 connectNulls
@@ -178,9 +178,9 @@ export function DailyWeightLineChart({
                 type="monotone"
                 dataKey="actual"
                 name="Daily"
-                stroke="#f97316"
+                stroke={CHART.primary}
                 strokeWidth={2}
-                dot={{ fill: "#f97316", r: 3 }}
+                dot={{ fill: CHART.primary, r: 3 }}
                 connectNulls
               />
             </LineChart>
@@ -240,13 +240,13 @@ export function WeeklyTargetActualChart({
                   );
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => <span className="text-zinc-300">{v}</span>} />
+              <Legend wrapperStyle={{ fontSize: 12 }} formatter={(v) => <span className="text-theme-text-muted">{v}</span>} />
               <Bar dataKey="actualLbs" name="Actual avg" radius={[4, 4, 0, 0]}>
                 {chartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.onTrack ? "#22c55e" : "#f97316"} />
+                  <Cell key={i} fill={entry.onTrack ? "var(--success)" : "var(--accent)"} />
                 ))}
               </Bar>
-              <Bar dataKey="targetLbs" name="Target" fill="#71717a" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="targetLbs" name="Target" fill={CHART.secondary} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

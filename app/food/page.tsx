@@ -21,6 +21,7 @@ import {
   sumNutrients,
   formatKcal,
   formatGrams,
+  macroCaloriePercents,
 } from "@/lib/food-helpers";
 import { addDays, formatShortDate, localISODate } from "@/lib/weight-helpers";
 import type { DailyFoodLogWithFood, Food, NutritionGoal } from "@/types";
@@ -138,6 +139,17 @@ export default function FoodLogPage() {
     return sumNutrients(logs.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit)));
   }, [logs]);
 
+  const dayMacroPct = useMemo(
+    () =>
+      macroCaloriePercents(
+        dayTotals.calories,
+        dayTotals.protein_g,
+        dayTotals.carbs_g,
+        dayTotals.fat_g
+      ),
+    [dayTotals]
+  );
+
   const perSlotTotals = useMemo(() => {
     const out: Record<number, ReturnType<typeof sumNutrients>> = {
       1: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
@@ -202,7 +214,7 @@ export default function FoodLogPage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error ?? "Session expired."} backHref="/auth/login" backLabel="Sign in" />
         </div>
@@ -211,7 +223,7 @@ export default function FoodLogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader
           title="Food log"
@@ -219,15 +231,15 @@ export default function FoodLogPage() {
         />
 
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link href="/food/library" className="font-medium text-[#f97316] hover:underline">
+          <Link href="/food/library" className="font-medium text-theme-accent hover:underline">
             Food library
           </Link>
-          <span className="text-zinc-600">·</span>
-          <Link href="/food/templates" className="font-medium text-[#f97316] hover:underline">
+          <span className="text-theme-text-muted/80">·</span>
+          <Link href="/food/templates" className="font-medium text-theme-accent hover:underline">
             Meal templates
           </Link>
-          <span className="text-zinc-600">·</span>
-          <Link href="/food/weekly" className="font-medium text-[#f97316] hover:underline">
+          <span className="text-theme-text-muted/80">·</span>
+          <Link href="/food/weekly" className="font-medium text-theme-accent hover:underline">
             Weekly summary
           </Link>
         </div>
@@ -266,7 +278,7 @@ export default function FoodLogPage() {
             <button
               type="button"
               onClick={() => setSelectedDate((d) => addDays(d, -1))}
-              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800"
+              className="rounded-lg border border-theme-border px-3 py-2 text-sm font-bold text-theme-text-primary hover:bg-theme-border/90"
             >
               ←
             </button>
@@ -274,17 +286,17 @@ export default function FoodLogPage() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm font-bold text-white"
+              className="rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-sm font-bold text-theme-text-primary"
             />
             <button
               type="button"
               onClick={() => setSelectedDate((d) => addDays(d, 1))}
-              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800"
+              className="rounded-lg border border-theme-border px-3 py-2 text-sm font-bold text-theme-text-primary hover:bg-theme-border/90"
             >
               →
             </button>
           </div>
-          <p className="text-sm font-semibold text-zinc-400">{formatShortDate(selectedDate)}</p>
+          <p className="text-sm font-semibold text-theme-text-muted">{formatShortDate(selectedDate)}</p>
         </div>
 
         {goal && (
@@ -298,13 +310,22 @@ export default function FoodLogPage() {
             const entries = bySlot[slot] ?? [];
             const slotTotals = perSlotTotals[slot];
             const mealCal = slotTotals?.calories ?? 0;
+            const mealMacroPct = macroCaloriePercents(
+              mealCal,
+              slotTotals?.protein_g ?? 0,
+              slotTotals?.carbs_g ?? 0,
+              slotTotals?.fat_g ?? 0
+            );
+            const pg = Math.round(slotTotals?.protein_g ?? 0);
+            const cg = Math.round(slotTotals?.carbs_g ?? 0);
+            const fg = Math.round(slotTotals?.fat_g ?? 0);
             const isCollapsed = collapsed[slot];
             const hasItems = entries.length > 0;
             return (
               <div
                 key={slot}
-                className={`rounded-xl border bg-zinc-900/40 ${
-                  hasItems ? "border-zinc-800" : "border-dashed border-zinc-700"
+                className={`rounded-xl border bg-theme-surface/40 ${
+                  hasItems ? "border-theme-border" : "border-dashed border-theme-border"
                 }`}
               >
                 <button
@@ -313,23 +334,35 @@ export default function FoodLogPage() {
                   className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left sm:px-5"
                 >
                   <div>
-                    <h3 className="text-base font-bold text-white">{MEAL_SLOT_LABELS[slot]}</h3>
+                    <h3 className="text-base font-bold text-theme-text-primary">{MEAL_SLOT_LABELS[slot]}</h3>
                     <p className="text-sm font-bold tabular-nums">
-                      <span className="text-[#f97316]">{formatKcal(mealCal)} kcal</span>
-                      <span className="font-medium text-zinc-400">
+                      <span className="text-theme-accent">{formatKcal(mealCal)} kcal</span>
+                      <span className="font-medium text-theme-text-muted">
                         {" "}
-                        · P {Math.round(slotTotals?.protein_g ?? 0)}g · C {Math.round(slotTotals?.carbs_g ?? 0)}g · F{" "}
-                        {Math.round(slotTotals?.fat_g ?? 0)}g
+                        · P {pg}g
+                        {mealMacroPct && (
+                          <span className="font-medium text-theme-text-muted"> ({mealMacroPct.protein}%)</span>
+                        )}
+                        {" · C "}
+                        {cg}g
+                        {mealMacroPct && (
+                          <span className="font-medium text-theme-text-muted"> ({mealMacroPct.carbs}%)</span>
+                        )}
+                        {" · F "}
+                        {fg}g
+                        {mealMacroPct && (
+                          <span className="font-medium text-theme-text-muted"> ({mealMacroPct.fat}%)</span>
+                        )}
                       </span>
                     </p>
                   </div>
-                  <span className="text-zinc-500">{isCollapsed ? "▸" : "▾"}</span>
+                  <span className="text-theme-text-muted">{isCollapsed ? "▸" : "▾"}</span>
                 </button>
 
                 {!isCollapsed && (
-                  <div className="border-t border-zinc-800/80 px-4 pb-4 pt-2 sm:px-5">
+                  <div className="border-t border-theme-border/80 px-4 pb-4 pt-2 sm:px-5">
                     {!hasItems && (
-                      <p className="mb-3 text-sm font-medium text-zinc-500">Add food to this meal.</p>
+                      <p className="mb-3 text-sm font-medium text-theme-text-muted">Add food to this meal.</p>
                     )}
                     <ul className="space-y-2">
                       {entries.map((row) => {
@@ -337,11 +370,11 @@ export default function FoodLogPage() {
                         return (
                           <li
                             key={row.id}
-                            className="flex flex-col gap-2 rounded-lg border border-zinc-800/80 bg-zinc-950/50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+                            className="flex flex-col gap-2 rounded-lg border border-theme-border/80 bg-theme-input-bg/50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
                           >
                             <div>
-                              <p className="font-bold text-white">{row.foods.name}</p>
-                              <p className="text-sm text-zinc-500">
+                              <p className="font-bold text-theme-text-primary">{row.foods.name}</p>
+                              <p className="text-sm text-theme-text-muted">
                                 {formatGrams(Number(row.quantity), 1)}
                                 {row.serving_unit} · {formatKcal(n.calories)} kcal · P {Math.round(n.protein_g)}g · C{" "}
                                 {Math.round(n.carbs_g)}g · F {Math.round(n.fat_g)}g
@@ -351,7 +384,7 @@ export default function FoodLogPage() {
                               <button
                                 type="button"
                                 onClick={() => setEditLog(row)}
-                                className="rounded-lg border border-zinc-600 px-3 py-1.5 text-sm font-semibold text-zinc-300"
+                                className="rounded-lg border border-theme-border/80 px-3 py-1.5 text-sm font-semibold text-theme-text-muted"
                               >
                                 Edit
                               </button>
@@ -375,7 +408,7 @@ export default function FoodLogPage() {
                           setLogModalSlot(slot);
                           setFoodPickerSlot(slot);
                         }}
-                        className="rounded-lg bg-[#f97316] px-4 py-2 text-sm font-bold text-[#0a0a0a]"
+                        className="rounded-lg bg-theme-accent px-4 py-2 text-sm font-bold text-theme-on-accent"
                       >
                         Add food
                       </button>
@@ -385,14 +418,14 @@ export default function FoodLogPage() {
                           setTemplateLogMealSlot(slot);
                           setTemplatePickerSlot(slot);
                         }}
-                        className="rounded-lg border border-zinc-600 px-4 py-2 text-sm font-semibold text-zinc-200"
+                        className="rounded-lg border border-theme-border/80 px-4 py-2 text-sm font-semibold text-theme-text-primary/90"
                       >
                         Add meal template
                       </button>
                     </div>
 
-                    <div className="mt-4 rounded-lg border border-dashed border-zinc-700 bg-zinc-950/30 p-3">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">Quick add</p>
+                    <div className="mt-4 rounded-lg border border-dashed border-theme-border bg-theme-input-bg/30 p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-theme-text-muted">Quick add</p>
                       <FoodSearchPicker
                         foods={foods}
                         resultsOnlyWhenTyping
@@ -411,11 +444,11 @@ export default function FoodLogPage() {
         </section>
 
         <section className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-zinc-500">Daily totals</h2>
-          <div className="mt-3 overflow-x-auto rounded-xl border border-zinc-800">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-theme-text-muted">Daily totals</h2>
+          <div className="mt-3 overflow-x-auto rounded-xl border border-theme-border">
             <table className="w-full min-w-[480px] text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800 bg-zinc-900 text-zinc-400">
+                <tr className="border-b border-theme-border bg-theme-surface text-theme-text-muted">
                   <th className="px-3 py-2 font-semibold">Meal</th>
                   <th className="px-3 py-2 font-semibold">Calories</th>
                   <th className="px-3 py-2 font-semibold">Protein</th>
@@ -426,22 +459,53 @@ export default function FoodLogPage() {
               <tbody>
                 {MEAL_SLOTS.map((s) => {
                   const t = perSlotTotals[s];
+                  const rowPct = macroCaloriePercents(t.calories, t.protein_g, t.carbs_g, t.fat_g);
                   return (
-                    <tr key={s} className="border-b border-zinc-800/80 bg-zinc-950/50">
-                      <td className="px-3 py-2 font-bold text-white">{MEAL_SLOT_LABELS[s]}</td>
-                      <td className="px-3 py-2 font-bold tabular-nums text-white">{formatKcal(t.calories)}</td>
-                      <td className="px-3 py-2 font-bold tabular-nums text-[#3b82f6]">{t.protein_g.toFixed(1)}g</td>
-                      <td className="px-3 py-2 font-bold tabular-nums text-[#eab308]">{t.carbs_g.toFixed(1)}g</td>
-                      <td className="px-3 py-2 font-bold tabular-nums text-[#f97316]">{t.fat_g.toFixed(1)}g</td>
+                    <tr key={s} className="border-b border-theme-border/80 bg-theme-input-bg/50">
+                      <td className="px-3 py-2 font-bold text-theme-text-primary">{MEAL_SLOT_LABELS[s]}</td>
+                      <td className="px-3 py-2 font-bold tabular-nums text-theme-text-primary">{formatKcal(t.calories)}</td>
+                      <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-protein">
+                        {t.protein_g.toFixed(1)}g
+                        {rowPct && (
+                          <span className="font-semibold text-theme-text-muted"> ({rowPct.protein}%)</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-carbs">
+                        {t.carbs_g.toFixed(1)}g
+                        {rowPct && (
+                          <span className="font-semibold text-theme-text-muted"> ({rowPct.carbs}%)</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 font-bold tabular-nums text-theme-accent">
+                        {t.fat_g.toFixed(1)}g
+                        {rowPct && (
+                          <span className="font-semibold text-theme-text-muted"> ({rowPct.fat}%)</span>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
-                <tr className="bg-zinc-900/90">
-                  <td className="px-3 py-3 font-bold text-white">Total</td>
-                  <td className="px-3 py-3 font-bold tabular-nums text-white">{formatKcal(dayTotals.calories)}</td>
-                  <td className="px-3 py-3 font-bold tabular-nums text-[#3b82f6]">{dayTotals.protein_g.toFixed(1)}g</td>
-                  <td className="px-3 py-3 font-bold tabular-nums text-[#eab308]">{dayTotals.carbs_g.toFixed(1)}g</td>
-                  <td className="px-3 py-3 font-bold tabular-nums text-[#f97316]">{dayTotals.fat_g.toFixed(1)}g</td>
+                <tr className="bg-theme-surface/90">
+                  <td className="px-3 py-3 font-bold text-theme-text-primary">Total</td>
+                  <td className="px-3 py-3 font-bold tabular-nums text-theme-text-primary">{formatKcal(dayTotals.calories)}</td>
+                  <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-protein">
+                    {dayTotals.protein_g.toFixed(1)}g
+                    {dayMacroPct && (
+                      <span className="font-semibold text-theme-text-muted"> ({dayMacroPct.protein}%)</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-carbs">
+                    {dayTotals.carbs_g.toFixed(1)}g
+                    {dayMacroPct && (
+                      <span className="font-semibold text-theme-text-muted"> ({dayMacroPct.carbs}%)</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-3 font-bold tabular-nums text-theme-accent">
+                    {dayTotals.fat_g.toFixed(1)}g
+                    {dayMacroPct && (
+                      <span className="font-semibold text-theme-text-muted"> ({dayMacroPct.fat}%)</span>
+                    )}
+                  </td>
                 </tr>
               </tbody>
             </table>

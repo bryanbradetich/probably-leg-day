@@ -197,7 +197,7 @@ export default function MealTemplatesPage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error ?? "Session expired."} backHref="/auth/login" backLabel="Sign in" />
         </div>
@@ -206,16 +206,16 @@ export default function MealTemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader title="Meal templates" description="Save combos and log them in one tap." />
 
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link href="/food" className="font-medium text-[#f97316] hover:underline">
+          <Link href="/food" className="font-medium text-theme-accent hover:underline">
             Today&apos;s log
           </Link>
-          <span className="text-zinc-600">·</span>
-          <Link href="/food/library" className="font-medium text-[#f97316] hover:underline">
+          <span className="text-theme-text-muted/80">·</span>
+          <Link href="/food/library" className="font-medium text-theme-accent hover:underline">
             Food library
           </Link>
         </div>
@@ -231,13 +231,13 @@ export default function MealTemplatesPage() {
             <button
               type="button"
               onClick={startNew}
-              className="mt-8 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-bold text-[#0a0a0a]"
+              className="mt-8 rounded-xl bg-theme-accent px-5 py-3 text-sm font-bold text-theme-on-accent"
             >
               New template
             </button>
             <ul className="mt-8 space-y-4">
               {templates.length === 0 ? (
-                <li className="rounded-xl border border-dashed border-zinc-700 py-12 text-center text-zinc-500">
+                <li className="rounded-xl border border-dashed border-theme-border py-12 text-center text-theme-text-muted">
                   No templates yet.
                 </li>
               ) : (
@@ -248,11 +248,11 @@ export default function MealTemplatesPage() {
                     )
                   );
                   return (
-                    <li key={t.id} className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-5 py-4">
+                    <li key={t.id} className="rounded-xl border border-theme-border bg-theme-surface/40 px-5 py-4">
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-lg font-bold text-white">{t.name}</h3>
-                          <p className="mt-1 text-sm font-bold text-zinc-400">
+                          <h3 className="text-lg font-bold text-theme-text-primary">{t.name}</h3>
+                          <p className="mt-1 text-sm font-bold text-theme-text-muted">
                             {t.meal_template_foods.length} food{t.meal_template_foods.length === 1 ? "" : "s"} ·{" "}
                             {formatKcal(nuts.calories)} kcal · P {nuts.protein_g.toFixed(0)}g · C {nuts.carbs_g.toFixed(0)}g ·
                             F {nuts.fat_g.toFixed(0)}g
@@ -262,14 +262,14 @@ export default function MealTemplatesPage() {
                           <button
                             type="button"
                             onClick={() => setTemplateToLog(t)}
-                            className="rounded-lg bg-[#f97316] px-3 py-2 text-sm font-bold text-[#0a0a0a]"
+                            className="rounded-lg bg-theme-accent px-3 py-2 text-sm font-bold text-theme-on-accent"
                           >
                             Log template
                           </button>
                           <button
                             type="button"
                             onClick={() => startEdit(t)}
-                            className="rounded-lg border border-zinc-600 px-3 py-2 text-sm font-semibold text-zinc-200"
+                            className="rounded-lg border border-theme-border/80 px-3 py-2 text-sm font-semibold text-theme-text-primary/90"
                           >
                             Edit
                           </button>
@@ -289,21 +289,21 @@ export default function MealTemplatesPage() {
             </ul>
           </>
         ) : (
-          <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-900/40 p-5 sm:p-6">
-            <h2 className="text-lg font-bold text-white">{editId ? "Edit template" : "New template"}</h2>
-            <label className="mt-4 block text-sm text-zinc-400">
+          <div className="mt-8 rounded-xl border border-theme-border bg-theme-surface/40 p-5 sm:p-6">
+            <h2 className="text-lg font-bold text-theme-text-primary">{editId ? "Edit template" : "New template"}</h2>
+            <label className="mt-4 block text-sm text-theme-text-muted">
               Template name
               <input
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-semibold text-white"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 font-semibold text-theme-text-primary"
               />
             </label>
             <div className="mt-6 space-y-6">
               {lines.map((line, idx) => (
-                <div key={line.tempId} className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+                <div key={line.tempId} className="rounded-lg border border-theme-border bg-theme-input-bg/50 p-4">
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase text-zinc-500">Food {idx + 1}</span>
+                    <span className="text-xs font-bold uppercase text-theme-text-muted">Food {idx + 1}</span>
                     {lines.length > 1 && (
                       <button
                         type="button"
@@ -323,7 +323,7 @@ export default function MealTemplatesPage() {
                     }}
                   />
                   {(line.food || foodById[line.food_id]) && (
-                    <p className="mt-2 text-sm font-semibold text-[#f97316]">
+                    <p className="mt-2 text-sm font-semibold text-theme-accent">
                       Selected: {(line.food ?? foodById[line.food_id])!.name}
                     </p>
                   )}
@@ -338,9 +338,9 @@ export default function MealTemplatesPage() {
                           L.map((x) => (x.tempId === line.tempId ? { ...x, quantity: e.target.value } : x))
                         )
                       }
-                      className="w-28 rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-2 font-bold text-white"
+                      className="w-28 rounded-lg border border-theme-border bg-theme-input-bg px-2 py-2 font-bold text-theme-text-primary"
                     />
-                    <div className="flex rounded-lg border border-zinc-700 p-0.5">
+                    <div className="flex rounded-lg border border-theme-border p-0.5">
                       {(["g", "oz"] as const).map((u) => (
                         <button
                           key={u}
@@ -351,7 +351,7 @@ export default function MealTemplatesPage() {
                             )
                           }
                           className={`rounded-md px-3 py-2 text-sm font-bold ${
-                            line.serving_unit === u ? "bg-[#f97316] text-[#0a0a0a]" : "text-zinc-400"
+                            line.serving_unit === u ? "bg-theme-accent text-theme-on-accent" : "text-theme-text-muted"
                           }`}
                         >
                           {u}
@@ -365,7 +365,7 @@ export default function MealTemplatesPage() {
             <button
               type="button"
               onClick={() => setLines((L) => [...L, newLine()])}
-              className="mt-4 text-sm font-semibold text-[#f97316]"
+              className="mt-4 text-sm font-semibold text-theme-accent"
             >
               + Add another food
             </button>
@@ -376,7 +376,7 @@ export default function MealTemplatesPage() {
                   setCreating(false);
                   setEditId(null);
                 }}
-                className="rounded-xl border border-zinc-600 px-5 py-3 text-sm font-semibold text-zinc-300"
+                className="rounded-xl border border-theme-border/80 px-5 py-3 text-sm font-semibold text-theme-text-muted"
               >
                 Cancel
               </button>
@@ -384,7 +384,7 @@ export default function MealTemplatesPage() {
                 type="button"
                 onClick={() => void saveTemplate()}
                 disabled={saving}
-                className="rounded-xl bg-[#f97316] px-5 py-3 text-sm font-bold text-[#0a0a0a] disabled:opacity-50"
+                className="rounded-xl bg-theme-accent px-5 py-3 text-sm font-bold text-theme-on-accent disabled:opacity-50"
               >
                 {saving ? "Saving…" : "Save template"}
               </button>

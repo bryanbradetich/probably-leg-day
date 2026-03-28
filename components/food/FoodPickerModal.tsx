@@ -22,10 +22,10 @@ export function FoodPickerModal({
     <>
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" aria-hidden onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-2xl border border-zinc-800 bg-[#0a0a0a] shadow-xl">
-          <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-            <h2 className="text-lg font-bold text-white">{title}</h2>
-            <button type="button" onClick={onClose} className="text-zinc-400 hover:text-white">
+        <div className="flex max-h-[85vh] w-full max-w-md flex-col rounded-2xl border border-theme-border bg-theme-bg shadow-xl">
+          <div className="flex items-center justify-between border-b border-theme-border px-5 py-4">
+            <h2 className="text-lg font-bold text-theme-text-primary">{title}</h2>
+            <button type="button" onClick={onClose} className="text-theme-text-muted hover:text-theme-text-primary">
               ✕
             </button>
           </div>

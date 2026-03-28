@@ -250,13 +250,13 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] animate-pulse">
+      <div className="min-h-screen bg-theme-bg animate-pulse">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-          <div className="h-8 w-48 rounded-lg bg-zinc-800" />
-          <div className="mt-2 h-5 w-72 rounded bg-zinc-800" />
+          <div className="h-8 w-48 rounded-lg bg-theme-border/90" />
+          <div className="mt-2 h-5 w-72 rounded bg-theme-border/90" />
           <div className="mt-8 space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 rounded-xl bg-zinc-800" />
+              <div key={i} className="h-64 rounded-xl bg-theme-border/90" />
             ))}
           </div>
         </div>
@@ -266,16 +266,16 @@ export default function ReportsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <div className="flex min-h-[40vh] items-center justify-center">
             <div className="w-full max-w-md rounded-xl border-2 border-red-500/50 bg-red-500/5 p-6 text-center">
               <p className="font-semibold text-red-400">Something went wrong</p>
-              <p className="mt-2 text-sm text-zinc-400">{error}</p>
+              <p className="mt-2 text-sm text-theme-text-muted">{error}</p>
               <button
                 type="button"
                 onClick={() => load()}
-                className="mt-6 rounded-lg bg-[#f97316] px-4 py-2 text-sm font-medium text-[#0a0a0a]"
+                className="mt-6 rounded-lg bg-theme-accent px-4 py-2 text-sm font-medium text-theme-on-accent"
               >
                 Try again
               </button>
@@ -287,17 +287,17 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Reports</h1>
-            <p className="mt-2 text-zinc-400">Volume, frequency, bodyweight, and PRs over time.</p>
+            <h1 className="text-2xl font-bold text-theme-text-primary">Reports</h1>
+            <p className="mt-2 text-theme-text-muted">Volume, frequency, bodyweight, and PRs over time.</p>
           </div>
         </div>
 
         {/* Time range selector — sticky */}
-        <div className="sticky top-14 z-10 -mx-4 flex flex-wrap gap-2 border-b border-zinc-800 bg-[#0a0a0a]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="sticky top-14 z-10 -mx-4 flex flex-wrap gap-2 border-b border-theme-border bg-theme-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
           {TIME_RANGES.map((r) => (
             <button
               key={r.key}
@@ -305,8 +305,8 @@ export default function ReportsPage() {
               onClick={() => setTimeRange(r.key)}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                 timeRange === r.key
-                  ? "bg-[#f97316] text-[#0a0a0a]"
-                  : "border border-zinc-700 bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-theme-accent text-theme-on-accent"
+                  : "border border-theme-border bg-theme-surface/50 text-theme-text-muted hover:bg-theme-border/90 hover:text-theme-text-primary"
               }`}
             >
               {r.label}
@@ -517,18 +517,11 @@ export default function ReportsPage() {
                         if (!active || !payload?.[0]) return null;
                         const p = payload[0].payload as (typeof prTimelineData)[0];
                         return (
-                          <div
-                            className="rounded-lg border px-3 py-2 text-sm shadow-xl"
-                            style={{
-                              backgroundColor: CHART.tooltipBg,
-                              borderColor: CHART.tooltipBorder,
-                              color: "white",
-                            }}
-                          >
+                          <div className="rounded-lg border border-theme-accent bg-theme-surface px-3 py-2 text-sm text-theme-text-primary shadow-xl">
                             <p className="font-medium">{p.name}</p>
-                            <p className="text-zinc-300">{p.type.replace("_", " ")}</p>
+                            <p className="text-theme-text-muted">{p.type.replace("_", " ")}</p>
                             <p>{p.valueLabel}</p>
-                            <p className="text-zinc-400">{new Date(p.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</p>
+                            <p className="text-theme-text-muted">{new Date(p.date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</p>
                           </div>
                         );
                       }}

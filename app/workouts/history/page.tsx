@@ -127,7 +127,7 @@ export default function WorkoutHistoryPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error} retry={load} backHref="/workouts/log" backLabel="Back to Log" />
         </div>
@@ -136,7 +136,7 @@ export default function WorkoutHistoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader
           title="Workout History"
@@ -144,7 +144,7 @@ export default function WorkoutHistoryPage() {
           actions={
             <Link
               href="/workouts/compare"
-              className="rounded-lg border border-zinc-600 bg-transparent px-4 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              className="rounded-lg border border-theme-border/80 bg-transparent px-4 py-2 text-sm font-medium text-theme-text-muted hover:bg-theme-border/90 hover:text-theme-text-primary"
             >
               Compare Workouts
             </Link>
@@ -157,20 +157,20 @@ export default function WorkoutHistoryPage() {
             placeholder="Search by workout name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-w-[200px] rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+            className="min-w-[200px] rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
           />
           <input
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+            className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
           />
-          <span className="self-center text-zinc-500">to</span>
+          <span className="self-center text-theme-text-muted">to</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+            className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
           />
         </div>
 
@@ -189,12 +189,12 @@ export default function WorkoutHistoryPage() {
               <li key={log.id}>
                 <Link
                   href={`/workouts/history/${log.id}`}
-                  className="block rounded-xl border border-zinc-800 bg-zinc-900/30 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-800/30 sm:px-5"
+                  className="block rounded-xl border border-theme-border bg-theme-surface/30 px-4 py-4 transition hover:border-theme-border hover:bg-theme-border/90/30 sm:px-5"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-semibold text-white">{log.name}</p>
-                      <p className="mt-0.5 text-sm text-zinc-500">
+                      <p className="font-semibold text-theme-text-primary">{log.name}</p>
+                      <p className="mt-0.5 text-sm text-theme-text-muted">
                         {formatDate(log.completed_at)} ·{" "}
                         {formatDuration(log.duration_seconds)} ·{" "}
                         {log.exercise_count ?? 0} exercise
@@ -205,7 +205,7 @@ export default function WorkoutHistoryPage() {
                         lbs volume
                       </p>
                     </div>
-                    <span className="text-zinc-500">→</span>
+                    <span className="text-theme-text-muted">→</span>
                   </div>
                 </Link>
               </li>

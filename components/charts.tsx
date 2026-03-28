@@ -1,21 +1,21 @@
 "use client";
 
-/** App chart theme: dark bg, orange accent, zinc grid/text */
+/** Recharts colors follow CSS variables so charts match the active theme. */
 export const CHART = {
   bg: "transparent",
-  grid: "#27272a",
-  axis: "#a1a1aa",
-  primary: "#f97316",
-  secondary: "#71717a",
-  tooltipBg: "#18181b",
-  tooltipBorder: "#f97316",
+  grid: "var(--border)",
+  axis: "var(--text-muted)",
+  primary: "var(--accent)",
+  secondary: "var(--chart-secondary)",
+  tooltipBg: "var(--surface)",
+  tooltipBorder: "var(--accent)",
 } as const;
 
 export const PR_COLORS: Record<string, string> = {
-  max_weight: "#f97316",
-  max_reps: "#22c55e",
-  max_volume: "#3b82f6",
-  max_duration: "#a855f7",
+  max_weight: "var(--accent)",
+  max_reps: "var(--success)",
+  max_volume: "var(--macro-protein)",
+  max_duration: "var(--chart-purple)",
 };
 
 /** Wrapper for chart sections with optional title and empty state */
@@ -31,12 +31,12 @@ export function ChartCard({
   emptyMessage?: string;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 sm:p-5">
+    <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4 sm:p-5">
       {title && (
-        <h3 className="mb-4 text-sm font-semibold text-white sm:text-base">{title}</h3>
+        <h3 className="mb-4 text-sm font-semibold text-theme-text-primary sm:text-base">{title}</h3>
       )}
       {empty ? (
-        <p className="py-8 text-center text-sm text-zinc-500">{emptyMessage}</p>
+        <p className="py-8 text-center text-sm text-theme-text-muted">{emptyMessage}</p>
       ) : (
         children
       )}
@@ -54,7 +54,6 @@ type ChartTooltipProps = {
   formatter?: (value: number, name?: string) => string;
 };
 
-/** Recharts tooltip: dark background, white text, orange accent border */
 export function ChartTooltip({
   active,
   payload,
@@ -66,14 +65,9 @@ export function ChartTooltip({
   const displayLabel = label != null && labelFormatter ? labelFormatter(label) : String(label ?? "");
   return (
     <div
-      className="rounded-lg border px-3 py-2 text-sm shadow-xl"
-      style={{
-        backgroundColor: CHART.tooltipBg,
-        borderColor: CHART.tooltipBorder,
-        color: "white",
-      }}
+      className="rounded-lg border border-theme-accent bg-theme-surface px-3 py-2 text-sm text-theme-text-primary shadow-xl"
     >
-      {displayLabel && <p className="mb-1 font-medium text-zinc-200">{displayLabel}</p>}
+      {displayLabel && <p className="mb-1 font-medium text-theme-text-primary/90">{displayLabel}</p>}
       {payload.map((entry, i) => (
         <p key={String(entry.dataKey ?? i)}>
           {formatter

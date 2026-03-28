@@ -84,7 +84,7 @@ export default function ProgressPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error} retry={() => window.location.reload()} backHref="/dashboard" backLabel="Dashboard" />
         </div>
@@ -93,14 +93,14 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader
           title="Progress"
           description="Track your progress by exercise. View charts and set history for each."
         />
         <p className="mt-4">
-          <Link href="/reports" className="text-[#f97316] hover:underline">
+          <Link href="/reports" className="text-theme-accent hover:underline">
             View Reports →
           </Link>
         </p>
@@ -119,11 +119,11 @@ export default function ProgressPage() {
               <li key={ex.id}>
                 <Link
                   href={`/progress/exercise/${ex.id}`}
-                  className="block rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 transition hover:border-[#f97316]/60 hover:bg-zinc-900 sm:px-5"
+                  className="block rounded-xl border border-theme-border bg-theme-surface/50 px-4 py-3 transition hover:border-theme-accent/60 hover:bg-theme-surface sm:px-5"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium text-white">{ex.name}</span>
-                    <span className="text-sm text-zinc-500">
+                    <span className="font-medium text-theme-text-primary">{ex.name}</span>
+                    <span className="text-sm text-theme-text-muted">
                       {ex.set_count} set{ex.set_count !== 1 ? "s" : ""} · {(ex.volume_kg * 2.20462).toLocaleString(undefined, { maximumFractionDigits: 0 })} lbs volume
                     </span>
                   </div>

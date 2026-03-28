@@ -45,22 +45,22 @@ export function FoodSearchPicker({
         onChange={(e) => setQ(e.target.value)}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-[#f97316] focus:outline-none"
+        className="w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2.5 text-sm text-theme-text-primary placeholder:text-theme-text-muted/60 focus:border-theme-accent focus:outline-none"
       />
       {showList && (
-      <ul className="max-h-56 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-950/80">
+      <ul className="max-h-56 overflow-y-auto rounded-lg border border-theme-border bg-theme-input-bg/80">
         {filtered.length === 0 ? (
-          <li className="px-3 py-6 text-center text-sm text-zinc-500">No matches</li>
+          <li className="px-3 py-6 text-center text-sm text-theme-text-muted">No matches</li>
         ) : (
           filtered.map((f) => (
-            <li key={f.id} className="border-b border-zinc-800/80 last:border-0">
+            <li key={f.id} className="border-b border-theme-border/80 last:border-0">
               <button
                 type="button"
                 onClick={() => onSelect(f)}
-                className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left text-sm transition hover:bg-zinc-800/80"
+                className="flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left text-sm transition hover:bg-theme-border/90/80"
               >
-                <span className="font-bold text-white">{f.name}</span>
-                <span className="text-xs text-zinc-500">
+                <span className="font-bold text-theme-text-primary">{f.name}</span>
+                <span className="text-xs text-theme-text-muted">
                   {f.brand ? `${f.brand} · ` : ""}
                   {formatKcal(Number(f.calories))} kcal / {Number(f.serving_size)}
                   {f.serving_unit}

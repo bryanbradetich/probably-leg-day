@@ -5,9 +5,9 @@ import type { NutritionGoal } from "@/types";
 import { formatGrams, goalMacroGrams } from "@/lib/food-helpers";
 
 const COLORS = {
-  protein: "#3b82f6",
-  carbs: "#eab308",
-  fat: "#f97316",
+  protein: "var(--macro-protein)",
+  carbs: "var(--macro-carbs)",
+  fat: "var(--macro-fat)",
 } as const;
 
 export type NutritionGoalSavePayload = {
@@ -70,19 +70,19 @@ export function NutritionGoalSetup({
   if (compact && goal && onEditRequest) {
     const g = goalMacroGrams(goal);
     return (
-      <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-bold text-white">
+      <div className="flex flex-col gap-3 rounded-xl border border-theme-border bg-theme-surface/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-bold text-theme-text-primary">
           Goal: {Math.round(Number(goal.daily_calories)).toLocaleString()} kcal · P{" "}
           {Number(goal.protein_pct).toFixed(0)}% / C {Number(goal.carbs_pct).toFixed(0)}% / F{" "}
           {Number(goal.fat_pct).toFixed(0)}%
-          <span className="ml-2 block text-xs font-medium text-zinc-500 sm:inline sm:ml-2">
+          <span className="ml-2 block text-xs font-medium text-theme-text-muted sm:inline sm:ml-2">
             (~{formatGrams(g.protein_g, 0)}g P · ~{formatGrams(g.carbs_g, 0)}g C · ~{formatGrams(g.fat_g, 0)}g F)
           </span>
         </p>
         <button
           type="button"
           onClick={onEditRequest}
-          className="shrink-0 rounded-lg border border-[#f97316]/70 bg-[#f97316]/10 px-3 py-1.5 text-sm font-medium text-[#fb923c] hover:bg-[#f97316]/20"
+          className="shrink-0 rounded-lg border border-theme-accent/70 bg-theme-accent/10 px-3 py-1.5 text-sm font-medium text-theme-accent-soft hover:bg-theme-accent/20"
         >
           Edit goal
         </button>
@@ -91,20 +91,20 @@ export function NutritionGoalSetup({
   }
 
   return (
-    <div className="rounded-xl border border-[#f97316]/40 bg-[#f97316]/5 p-5 sm:p-6">
-      <h2 className="text-lg font-bold text-white">Set your nutrition goal</h2>
-      <p className="mt-1 text-sm text-zinc-400">
+    <div className="rounded-xl border border-theme-accent/40 bg-theme-accent/5 p-5 sm:p-6">
+      <h2 className="text-lg font-bold text-theme-text-primary">Set your nutrition goal</h2>
+      <p className="mt-1 text-sm text-theme-text-muted">
         Daily calorie target and macro split (percentages must total 100%).
       </p>
 
-      <label className="mt-6 block text-sm font-medium text-zinc-400">Daily calorie target</label>
+      <label className="mt-6 block text-sm font-medium text-theme-text-muted">Daily calorie target</label>
       <input
         type="number"
         min={1}
         step={50}
         value={calories}
         onChange={(e) => setCalories(e.target.value)}
-        className="mt-2 h-12 w-full max-w-xs rounded-xl border-2 border-zinc-700 bg-zinc-950 px-4 text-lg font-bold tabular-nums text-white outline-none focus:border-[#f97316]"
+        className="mt-2 h-12 w-full max-w-xs rounded-xl border-2 border-theme-border bg-theme-input-bg px-4 text-lg font-bold tabular-nums text-theme-text-primary outline-none focus:border-theme-accent"
       />
 
       <div className="mt-8 space-y-6">
@@ -113,7 +113,7 @@ export function NutritionGoalSetup({
             <span className="font-medium" style={{ color: COLORS.protein }}>
               Protein
             </span>
-            <span className="tabular-nums text-zinc-300">{pPct.toFixed(0)}%</span>
+            <span className="tabular-nums text-theme-text-muted">{pPct.toFixed(0)}%</span>
           </div>
           <input
             type="range"
@@ -122,7 +122,7 @@ export function NutritionGoalSetup({
             step={1}
             value={pPct}
             onChange={(e) => setPPct(Number(e.target.value))}
-            className="mt-2 h-3 w-full accent-[#3b82f6]"
+            className="mt-2 h-3 w-full accent-[color:var(--macro-protein)]"
           />
         </div>
         <div>
@@ -130,7 +130,7 @@ export function NutritionGoalSetup({
             <span className="font-medium" style={{ color: COLORS.carbs }}>
               Carbs
             </span>
-            <span className="tabular-nums text-zinc-300">{cPct.toFixed(0)}%</span>
+            <span className="tabular-nums text-theme-text-muted">{cPct.toFixed(0)}%</span>
           </div>
           <input
             type="range"
@@ -139,7 +139,7 @@ export function NutritionGoalSetup({
             step={1}
             value={cPct}
             onChange={(e) => setCPct(Number(e.target.value))}
-            className="mt-2 h-3 w-full accent-[#eab308]"
+            className="mt-2 h-3 w-full accent-[color:var(--macro-carbs)]"
           />
         </div>
         <div>
@@ -147,7 +147,7 @@ export function NutritionGoalSetup({
             <span className="font-medium" style={{ color: COLORS.fat }}>
               Fat
             </span>
-            <span className="tabular-nums text-zinc-300">{fPct.toFixed(0)}%</span>
+            <span className="tabular-nums text-theme-text-muted">{fPct.toFixed(0)}%</span>
           </div>
           <input
             type="range"
@@ -156,19 +156,19 @@ export function NutritionGoalSetup({
             step={1}
             value={fPct}
             onChange={(e) => setFPct(Number(e.target.value))}
-            className="mt-2 h-3 w-full accent-[#f97316]"
+            className="mt-2 h-3 w-full accent-[color:var(--macro-fat)]"
           />
         </div>
       </div>
 
       <p
-        className={`mt-4 text-sm font-semibold ${sumOk ? "text-zinc-500" : "text-[#ef4444]"}`}
+        className={`mt-4 text-sm font-semibold ${sumOk ? "text-theme-text-muted" : "text-theme-danger"}`}
       >
         Macro total: {sum.toFixed(0)}%{!sumOk && " — must equal 100%"}
       </p>
 
       {grams && sumOk && (
-        <ul className="mt-4 space-y-1 text-sm font-bold text-white">
+        <ul className="mt-4 space-y-1 text-sm font-bold text-theme-text-primary">
           <li style={{ color: COLORS.protein }}>
             Protein: {pPct.toFixed(0)}% ≈ {formatGrams(grams.protein_g, 0)}g per day
           </li>
@@ -186,7 +186,7 @@ export function NutritionGoalSetup({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-zinc-600 px-6 py-3 text-sm font-semibold text-zinc-300"
+            className="rounded-xl border border-theme-border/80 px-6 py-3 text-sm font-semibold text-theme-text-muted"
           >
             Cancel
           </button>
@@ -195,7 +195,7 @@ export function NutritionGoalSetup({
           type="button"
           onClick={handleSave}
           disabled={saving || !sumOk}
-          className="rounded-xl bg-[#f97316] px-6 py-3 text-sm font-bold text-[#0a0a0a] disabled:opacity-40"
+          className="rounded-xl bg-theme-accent px-6 py-3 text-sm font-bold text-theme-on-accent disabled:opacity-40"
         >
           {saving ? "Saving…" : "Save goal"}
         </button>

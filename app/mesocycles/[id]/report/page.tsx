@@ -29,9 +29,9 @@ function formatDuration(seconds: number | null | undefined): string {
 
 function StatusBadge({ status }: { status: Mesocycle["status"] }) {
   const styles: Record<string, string> = {
-    active: "bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40",
+    active: "bg-theme-accent/20 text-theme-accent border-theme-accent/40",
     planned: "bg-blue-500/20 text-blue-400 border-blue-500/40",
-    completed: "bg-zinc-600/30 text-zinc-400 border-zinc-500/40",
+    completed: "bg-zinc-600/30 text-theme-text-muted border-zinc-500/40",
   };
   const labels: Record<string, string> = { active: "Active", planned: "Planned", completed: "Completed" };
   return (
@@ -247,54 +247,54 @@ export default function MesocycleReportPage() {
 
   if (loading || !mesocycle) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <div className="mb-6">
-          <Link href={`/mesocycles/${id}`} className="text-zinc-400 hover:text-white">
+          <Link href={`/mesocycles/${id}`} className="text-theme-text-muted hover:text-theme-text-primary">
             ← Mesocycle
           </Link>
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
+        <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">{mesocycle.name}</h1>
+              <h1 className="text-2xl font-bold text-theme-text-primary">{mesocycle.name}</h1>
               <div className="mt-2 flex items-center gap-2">
                 <StatusBadge status={mesocycle.status ?? "planned"} />
                 {durationWeeks != null && (
-                  <span className="text-sm text-zinc-500">{durationWeeks} weeks</span>
+                  <span className="text-sm text-theme-text-muted">{durationWeeks} weeks</span>
                 )}
               </div>
-              <p className="mt-2 text-sm text-zinc-500">
+              <p className="mt-2 text-sm text-theme-text-muted">
                 {formatDate(mesocycle.start_date)} – {formatDate(mesocycle.end_date)}
               </p>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-              <p className="text-xl font-bold text-white">{totalWorkouts}</p>
-              <p className="text-xs text-zinc-500">Workouts</p>
+            <div className="rounded-lg border border-theme-border bg-theme-surface/50 p-3">
+              <p className="text-xl font-bold text-theme-text-primary">{totalWorkouts}</p>
+              <p className="text-xs text-theme-text-muted">Workouts</p>
             </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-              <p className="text-xl font-bold text-white">
-                {kgToLbs(totalVolumeKg)?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? 0} <span className="text-sm font-normal text-zinc-500">lbs</span>
+            <div className="rounded-lg border border-theme-border bg-theme-surface/50 p-3">
+              <p className="text-xl font-bold text-theme-text-primary">
+                {kgToLbs(totalVolumeKg)?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? 0} <span className="text-sm font-normal text-theme-text-muted">lbs</span>
               </p>
-              <p className="text-xs text-zinc-500">Total volume</p>
+              <p className="text-xs text-theme-text-muted">Total volume</p>
             </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-              <p className="text-xl font-bold text-white">{formatDuration(totalSeconds)}</p>
-              <p className="text-xs text-zinc-500">Time trained</p>
+            <div className="rounded-lg border border-theme-border bg-theme-surface/50 p-3">
+              <p className="text-xl font-bold text-theme-text-primary">{formatDuration(totalSeconds)}</p>
+              <p className="text-xs text-theme-text-muted">Time trained</p>
             </div>
-            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
-              <p className="text-xl font-bold text-white">{prs.length}</p>
-              <p className="text-xs text-zinc-500">PRs achieved</p>
+            <div className="rounded-lg border border-theme-border bg-theme-surface/50 p-3">
+              <p className="text-xl font-bold text-theme-text-primary">{prs.length}</p>
+              <p className="text-xs text-theme-text-muted">PRs achieved</p>
             </div>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function MesocycleReportPage() {
 
           {perExerciseSeries.length > 0 && (
             <section>
-              <h2 className="mb-4 text-lg font-semibold text-white">Per-exercise progression</h2>
+              <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">Per-exercise progression</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {perExerciseSeries.map(({ exercise, points }) => (
                   <ChartCard key={exercise.id} title={exercise.name} empty={points.length === 0}>
@@ -343,11 +343,11 @@ export default function MesocycleReportPage() {
 
           {firstLastByTemplate.length > 0 && (
             <section>
-              <h2 className="mb-4 text-lg font-semibold text-white">First vs last workout (by template)</h2>
-              <div className="overflow-hidden rounded-xl border border-zinc-800">
+              <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">First vs last workout (by template)</h2>
+              <div className="overflow-hidden rounded-xl border border-theme-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-800 bg-zinc-900/50 text-left text-zinc-500">
+                    <tr className="border-b border-theme-border bg-theme-surface/50 text-left text-theme-text-muted">
                       <th className="px-4 py-3">Template</th>
                       <th className="px-4 py-3">Exercise</th>
                       <th className="px-4 py-3">First session</th>
@@ -357,11 +357,11 @@ export default function MesocycleReportPage() {
                   </thead>
                   <tbody>
                     {firstLastByTemplate.map((row, i) => (
-                      <tr key={i} className="border-b border-zinc-800/80">
-                        <td className="px-4 py-3 text-zinc-400">{row.templateName}</td>
-                        <td className="px-4 py-3 text-white">{row.exerciseName}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.first}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.last}</td>
+                      <tr key={i} className="border-b border-theme-border/80">
+                        <td className="px-4 py-3 text-theme-text-muted">{row.templateName}</td>
+                        <td className="px-4 py-3 text-theme-text-primary">{row.exerciseName}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.first}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.last}</td>
                         <td className="px-4 py-3">
                           {row.changePct != null ? (
                             <span className={row.improved ? "text-emerald-400" : "text-red-400"}>
@@ -381,16 +381,16 @@ export default function MesocycleReportPage() {
 
           {prs.length > 0 && (
             <section>
-              <h2 className="mb-4 text-lg font-semibold text-white">PRs achieved during this mesocycle</h2>
+              <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">PRs achieved during this mesocycle</h2>
               <ul className="space-y-2">
                 {prs.map((pr) => (
-                  <li key={pr.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-2">
-                    <span className="font-medium text-white">{pr.exercise_name}</span>
-                    <span className="text-zinc-400">{pr.record_type.replace("_", " ")}</span>
-                    <span className="text-[#f97316]">
+                  <li key={pr.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-theme-border bg-theme-surface/50 px-4 py-2">
+                    <span className="font-medium text-theme-text-primary">{pr.exercise_name}</span>
+                    <span className="text-theme-text-muted">{pr.record_type.replace("_", " ")}</span>
+                    <span className="text-theme-accent">
                       {pr.record_type === "max_weight" ? `${kgToLbs(pr.value)?.toFixed(1) ?? pr.value} lbs` : pr.record_type === "max_duration" ? `${pr.value} s` : pr.value}
                     </span>
-                    <span className="text-zinc-500 text-xs">{formatDate(pr.achieved_at)}</span>
+                    <span className="text-theme-text-muted text-xs">{formatDate(pr.achieved_at)}</span>
                   </li>
                 ))}
               </ul>

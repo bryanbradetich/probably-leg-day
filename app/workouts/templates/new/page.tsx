@@ -146,21 +146,21 @@ function NewTemplatePageContent() {
   if (userId === null) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
         <div className="mb-6 flex items-center gap-4">
           <Link
             href={mesocycleIdFromQuery ? `/mesocycles/${mesocycleIdFromQuery}` : "/workouts/templates"}
-            className="text-zinc-400 hover:text-white"
+            className="text-theme-text-muted hover:text-theme-text-primary"
           >
             ← {mesocycleIdFromQuery ? "Mesocycle" : "Templates"}
           </Link>
-          <h1 className="text-2xl font-bold text-white">New Template</h1>
+          <h1 className="text-2xl font-bold text-theme-text-primary">New Template</h1>
         </div>
 
         <div className="space-y-6">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">
               Template name *
             </label>
             <input
@@ -168,11 +168,11 @@ function NewTemplatePageContent() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Push Day"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">
               Description
             </label>
             <textarea
@@ -180,11 +180,11 @@ function NewTemplatePageContent() {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="Optional"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">
               Day of week
             </label>
             <select
@@ -192,7 +192,7 @@ function NewTemplatePageContent() {
               onChange={(e) =>
                 setDayOfWeek(e.target.value === "" ? null : Number(e.target.value))
               }
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             >
               {DAYS.map((d) => (
                 <option key={d.value ?? "none"} value={d.value ?? ""}>
@@ -204,20 +204,20 @@ function NewTemplatePageContent() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm font-medium text-zinc-300">
+              <label className="text-sm font-medium text-theme-text-muted">
                 Exercises (drag to reorder)
               </label>
               <button
                 type="button"
                 onClick={() => setPickerOpen(true)}
-                className="rounded-lg bg-[#f97316]/20 px-3 py-1.5 text-sm font-medium text-[#f97316] hover:bg-[#f97316]/30"
+                className="rounded-lg bg-theme-accent/20 px-3 py-1.5 text-sm font-medium text-theme-accent hover:bg-theme-accent/30"
               >
                 Add exercise
               </button>
             </div>
 
             {entries.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-zinc-700 py-8 text-center text-zinc-500">
+              <p className="rounded-lg border border-dashed border-theme-border py-8 text-center text-theme-text-muted">
                 No exercises yet. Click “Add exercise” to pick from the library.
               </p>
             ) : (
@@ -234,19 +234,19 @@ function NewTemplatePageContent() {
                       if (draggedIndex !== index) moveEntry(draggedIndex, index);
                     }}
                     onDragEnd={() => setDraggedIndex(null)}
-                    className={`cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 active:cursor-grabbing ${
+                    className={`cursor-grab rounded-xl border border-theme-border bg-theme-surface/50 p-4 active:cursor-grabbing ${
                       draggedIndex === index ? "opacity-60" : ""
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-zinc-500">⋮⋮</span>
+                      <span className="text-theme-text-muted">⋮⋮</span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-theme-text-primary">
                           {entry.exercise.name}
                         </p>
                         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                           <div>
-                            <label className="text-xs text-zinc-500">
+                            <label className="text-xs text-theme-text-muted">
                               Target sets
                             </label>
                             <input
@@ -260,12 +260,12 @@ function NewTemplatePageContent() {
                                   Math.max(1, parseInt(e.target.value, 10) || 1)
                                 )
                               }
-                              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white"
+                              className="mt-0.5 w-full rounded border border-theme-border bg-theme-surface px-2 py-1.5 text-sm text-theme-text-primary"
                             />
                           </div>
                           {entry.exercise.type === "reps_sets" ? (
                             <div>
-                              <label className="text-xs text-zinc-500">
+                              <label className="text-xs text-theme-text-muted">
                                 Target reps
                               </label>
                               <input
@@ -279,12 +279,12 @@ function NewTemplatePageContent() {
                                     parseInt(e.target.value, 10) || null
                                   )
                                 }
-                                className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white"
+                                className="mt-0.5 w-full rounded border border-theme-border bg-theme-surface px-2 py-1.5 text-sm text-theme-text-primary"
                               />
                             </div>
                           ) : (
                             <div>
-                              <label className="text-xs text-zinc-500">
+                              <label className="text-xs text-theme-text-muted">
                                 Target duration (sec)
                               </label>
                               <input
@@ -298,12 +298,12 @@ function NewTemplatePageContent() {
                                     parseInt(e.target.value, 10) || null
                                   )
                                 }
-                                className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white"
+                                className="mt-0.5 w-full rounded border border-theme-border bg-theme-surface px-2 py-1.5 text-sm text-theme-text-primary"
                               />
                             </div>
                           )}
                           <div>
-                            <label className="text-xs text-zinc-500">
+                            <label className="text-xs text-theme-text-muted">
                               Rest (sec)
                             </label>
                             <input
@@ -317,12 +317,12 @@ function NewTemplatePageContent() {
                                   Math.max(0, parseInt(e.target.value, 10) || 0)
                                 )
                               }
-                              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white"
+                              className="mt-0.5 w-full rounded border border-theme-border bg-theme-surface px-2 py-1.5 text-sm text-theme-text-primary"
                             />
                           </div>
                         </div>
                         <div className="mt-2">
-                          <label className="text-xs text-zinc-500">Notes</label>
+                          <label className="text-xs text-theme-text-muted">Notes</label>
                           <input
                             type="text"
                             value={entry.notes}
@@ -330,14 +330,14 @@ function NewTemplatePageContent() {
                               updateEntry(index, "notes", e.target.value)
                             }
                             placeholder="Optional"
-                            className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-800 px-2 py-1.5 text-sm text-white"
+                            className="mt-0.5 w-full rounded border border-theme-border bg-theme-surface px-2 py-1.5 text-sm text-theme-text-primary"
                           />
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeEntry(index)}
-                        className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-red-400"
+                        className="rounded p-1 text-theme-text-muted hover:bg-theme-border/90 hover:text-red-400"
                         aria-label="Remove"
                       >
                         ×
@@ -352,7 +352,7 @@ function NewTemplatePageContent() {
           <div className="flex gap-3">
             <Link
               href={mesocycleIdFromQuery ? `/mesocycles/${mesocycleIdFromQuery}` : "/workouts/templates"}
-              className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 py-2.5 text-center text-sm font-medium text-zinc-300 hover:bg-zinc-700"
+              className="flex-1 rounded-lg border border-theme-border/80 bg-theme-border/90 py-2.5 text-center text-sm font-medium text-theme-text-muted hover:bg-theme-border"
             >
               Cancel
             </Link>
@@ -360,7 +360,7 @@ function NewTemplatePageContent() {
               type="button"
               onClick={handleSave}
               disabled={saving || !name.trim()}
-              className="flex-1 rounded-lg bg-[#f97316] py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c] disabled:opacity-50"
+              className="flex-1 rounded-lg bg-theme-accent py-2.5 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save template"}
             </button>
@@ -376,8 +376,8 @@ function NewTemplatePageContent() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-800 bg-[#0a0a0a] p-4 shadow-xl">
-              <h2 className="mb-4 text-lg font-bold text-white">
+            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-theme-border bg-theme-bg p-4 shadow-xl">
+              <h2 className="mb-4 text-lg font-bold text-theme-text-primary">
                 Add exercise
               </h2>
               <ExercisePicker
@@ -396,7 +396,7 @@ function NewTemplatePageContent() {
 
 export default function NewTemplatePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">Loading…</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">Loading…</div>}>
       <NewTemplatePageContent />
     </Suspense>
   );

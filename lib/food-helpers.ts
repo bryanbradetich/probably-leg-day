@@ -98,3 +98,19 @@ export function macroCaloriesFromGrams(protein_g: number, carbs_g: number, fat_g
     fat_cal: fat_g * CAL_PER_G_FAT,
   };
 }
+
+/** % of total calories from each macro (4/4/9 kcal per g). Returns null when totalCalories ≤ 0. */
+export function macroCaloriePercents(
+  totalCalories: number,
+  protein_g: number,
+  carbs_g: number,
+  fat_g: number
+): { protein: number; carbs: number; fat: number } | null {
+  if (!Number.isFinite(totalCalories) || totalCalories <= 0) return null;
+  const { protein_cal, carbs_cal, fat_cal } = macroCaloriesFromGrams(protein_g, carbs_g, fat_g);
+  return {
+    protein: Math.round((protein_cal / totalCalories) * 100),
+    carbs: Math.round((carbs_cal / totalCalories) * 100),
+    fat: Math.round((fat_cal / totalCalories) * 100),
+  };
+}

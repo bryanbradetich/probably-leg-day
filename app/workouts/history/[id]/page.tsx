@@ -139,51 +139,51 @@ export default function WorkoutHistoryDetailPage() {
 
   if (loading || !log) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
         <div className="mb-6">
           <Link
             href="/workouts/history"
-            className="text-zinc-400 hover:text-white"
+            className="text-theme-text-muted hover:text-theme-text-primary"
           >
             ← History
           </Link>
         </div>
 
-        <h1 className="text-2xl font-bold text-white">{log.name}</h1>
-        <p className="mt-2 text-zinc-500">
+        <h1 className="text-2xl font-bold text-theme-text-primary">{log.name}</h1>
+        <p className="mt-2 text-theme-text-muted">
           {formatDate(log.completed_at)} · {formatDuration(log.duration_seconds)}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href={`/workouts/log/edit/${id}`}
-            className="inline-flex items-center justify-center rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-[#0a0a0a] shadow transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+            className="inline-flex items-center justify-center rounded-xl bg-theme-accent px-4 py-2.5 text-sm font-semibold text-theme-on-accent shadow transition hover:bg-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-theme-bg"
           >
             Edit Workout
           </Link>
           <button
             type="button"
             onClick={() => setDeleteModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+            className="inline-flex items-center justify-center rounded-xl border border-red-500/50 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-theme-bg"
           >
             Delete Workout
           </button>
         </div>
 
         {prs.length > 0 && (
-          <div className="mt-6 rounded-xl border-2 border-[#f97316] bg-[#f97316]/10 p-4">
-            <p className="mb-2 font-semibold text-[#f97316]">
+          <div className="mt-6 rounded-xl border-2 border-theme-accent bg-theme-accent/10 p-4">
+            <p className="mb-2 font-semibold text-theme-accent">
               Personal records achieved
             </p>
-            <ul className="space-y-1 text-[#f97316]">
+            <ul className="space-y-1 text-theme-accent">
               {prs.map((pr) => (
                 <li key={pr.id}>
                   {exercises[pr.exercise_id]?.name ?? "Exercise"}:{" "}
@@ -206,13 +206,13 @@ export default function WorkoutHistoryDetailPage() {
             return (
               <div
                 key={eid}
-                className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4"
+                className="rounded-xl border border-theme-border bg-theme-surface/30 p-4"
               >
-                <h2 className="font-semibold text-white">{name}</h2>
+                <h2 className="font-semibold text-theme-text-primary">{name}</h2>
                 <div className="mt-3 overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-700 text-left text-zinc-500">
+                      <tr className="border-b border-theme-border text-left text-theme-text-muted">
                         <th className="pb-2 pr-4">Set</th>
                         <th className="pb-2 pr-4">Reps</th>
                         <th className="pb-2 pr-4">Weight</th>
@@ -225,9 +225,9 @@ export default function WorkoutHistoryDetailPage() {
                       {rows.map((row) => (
                         <tr
                           key={row.id}
-                          className={`border-b border-zinc-800/80 ${
+                          className={`border-b border-theme-border/80 ${
                             prSetIds.has(row.id)
-                              ? "bg-[#f97316]/10 text-[#f97316]"
+                              ? "bg-theme-accent/10 text-theme-accent"
                               : ""
                           }`}
                         >
@@ -242,7 +242,7 @@ export default function WorkoutHistoryDetailPage() {
                           <td className="py-2 pr-4">{row.rpe ?? "—"}</td>
                           <td className="py-2">
                             {prSetIds.has(row.id) && (
-                              <span className="rounded bg-[#f97316] px-2 py-0.5 text-xs font-medium text-[#0a0a0a]">
+                              <span className="rounded bg-theme-accent px-2 py-0.5 text-xs font-medium text-theme-on-accent">
                                 PR
                               </span>
                             )}
@@ -268,18 +268,18 @@ export default function WorkoutHistoryDetailPage() {
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4">
             <div
-              className="flex h-full w-full flex-col justify-center rounded-none border-0 bg-[#0a0a0a] p-6 shadow-xl sm:h-auto sm:max-w-sm sm:rounded-xl sm:border sm:border-zinc-800"
+              className="flex h-full w-full flex-col justify-center rounded-none border-0 bg-theme-bg p-6 shadow-xl sm:h-auto sm:max-w-sm sm:rounded-xl sm:border sm:border-theme-border"
               role="dialog"
               aria-modal="true"
               aria-labelledby="delete-dialog-title"
             >
               <h2
                 id="delete-dialog-title"
-                className="text-lg font-bold text-white"
+                className="text-lg font-bold text-theme-text-primary"
               >
                 Delete workout?
               </h2>
-              <p className="mt-2 text-sm text-zinc-400">
+              <p className="mt-2 text-sm text-theme-text-muted">
                 This will permanently delete &quot;{log.name}&quot; and all its
                 sets. This cannot be undone.
               </p>
@@ -288,7 +288,7 @@ export default function WorkoutHistoryDetailPage() {
                   type="button"
                   onClick={() => !deleting && setDeleteModalOpen(false)}
                   disabled={deleting}
-                  className="flex-1 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-theme-border/80 bg-theme-border/90 py-2.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -296,7 +296,7 @@ export default function WorkoutHistoryDetailPage() {
                   type="button"
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-theme-text-primary hover:bg-red-700 disabled:opacity-50"
                 >
                   {deleting ? "Deleting…" : "Delete"}
                 </button>

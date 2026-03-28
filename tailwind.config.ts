@@ -9,16 +9,32 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "var(--accent-foreground)",
+        theme: {
+          bg: "var(--bg)",
+          surface: "var(--surface)",
+          border: "var(--border)",
+          accent: "var(--accent)",
+          "accent-hover": "var(--accent-hover)",
+          "accent-soft": "var(--accent-soft)",
+          "text-primary": "var(--text-primary)",
+          "text-muted": "var(--text-muted)",
+          "on-accent": "var(--on-accent)",
+          "input-bg": "var(--input-bg)",
+          "macro-protein": "var(--macro-protein)",
+          "macro-carbs": "var(--macro-carbs)",
+          "macro-fat": "var(--macro-fat)",
+          success: "var(--success)",
+          danger: "var(--danger)",
+          warning: "var(--warning)",
+          "chart-secondary": "var(--chart-secondary)",
+          "chart-purple": "var(--chart-purple)",
         },
-        muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
-        },
+      },
+      ringColor: {
+        "theme-accent": "var(--accent)",
+      },
+      ringOffsetColor: {
+        "theme-bg": "var(--bg)",
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],

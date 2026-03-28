@@ -17,9 +17,12 @@ import {
   mondayOfWeek,
   sundayOfWeekFromMonday,
 } from "@/lib/weight-helpers";
-import type { DailyFoodLogWithFood, DailyWeight, NutritionGoal, WeightGoal } from "@/types";
+import type { DailyFoodLogWithFood, DailyWeight, NutritionGoal, ProfileCalorieFields, WeightGoal } from "@/types";
 import { DashboardFoodWidget } from "@/components/food/DashboardFoodWidget";
+import { DashboardCalorieWidget } from "@/components/calories/DashboardCalorieWidget";
 import { scaledNutrients, sumNutrients } from "@/lib/food-helpers";
+import { computeBmrTdeeForDate, profileBmrFieldsComplete } from "@/lib/calorie-helpers";
+import { useTheme } from "@/components/ThemeProvider";
 
 type WeightWidget = {
   currentLbs: number;
@@ -31,6 +34,7 @@ type WeightWidget = {
 };
 
 export default function DashboardPage() {
+  const { themeName } = useTheme();
   const router = useRouter();
   const [user, setUser] = useState<{ email?: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +48,7 @@ export default function DashboardPage() {
     carbs_g: number;
     fat_g: number;
   } | null>(null);
+  const [calorieBalance, setCalorieBalance] = useState<{ in: number; out: number } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -175,6 +180,17 @@ export default function DashboardPage() {
         setWeightWidget(null);
       }
 
+      const todayFood = localISODate();
+      const { data: foodRowsToday } = await supabase
+        .from("daily_food_logs")
+        .select("*, foods(*)")
+        .eq("user_id", u.id)
+        .eq("logged_date", todayFood);
+      const rowsToday = (foodRowsToday ?? []) as DailyFoodLogWithFood[];
+      const foodTotals = sumNutrients(
+        rowsToday.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit))
+      );
+
       const { data: ng } = await supabase
         .from("nutrition_goals")
         .select("*")
@@ -182,20 +198,44 @@ export default function DashboardPage() {
         .maybeSingle();
       if (ng) {
         setNutritionGoal(ng as NutritionGoal);
-        const todayFood = localISODate();
-        const { data: foodRows } = await supabase
-          .from("daily_food_logs")
-          .select("*, foods(*)")
-          .eq("user_id", u.id)
-          .eq("logged_date", todayFood);
-        const rows = (foodRows ?? []) as DailyFoodLogWithFood[];
-        setFoodTotalsToday(
-          sumNutrients(rows.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit)))
-        );
+        setFoodTotalsToday(foodTotals);
       } else {
         setNutritionGoal(null);
         setFoodTotalsToday(null);
       }
+
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("height_cm, date_of_birth, biological_sex, activity_level, custom_activity_multiplier")
+        .eq("id", u.id)
+        .maybeSingle();
+      const pr = prof as Partial<Omit<ProfileCalorieFields, "id">> | null;
+      const profileCal: ProfileCalorieFields | null = pr
+        ? {
+            id: u.id,
+            height_cm: pr.height_cm ?? null,
+            date_of_birth: pr.date_of_birth ?? null,
+            biological_sex: (pr.biological_sex as ProfileCalorieFields["biological_sex"]) ?? null,
+            activity_level: (pr.activity_level as ProfileCalorieFields["activity_level"]) ?? "sedentary",
+            custom_activity_multiplier: pr.custom_activity_multiplier ?? null,
+          }
+        : null;
+
+      let calBal: { in: number; out: number } | null = null;
+      if (profileCal && profileBmrFieldsComplete(profileCal)) {
+        const wList = (dwRows ?? []) as DailyWeight[];
+        const energy = computeBmrTdeeForDate(profileCal, wList, todayFood);
+        if (energy) {
+          const { data: burnToday } = await supabase
+            .from("calorie_burns")
+            .select("calories_burned")
+            .eq("user_id", u.id)
+            .eq("logged_date", todayFood);
+          const extra = (burnToday ?? []).reduce((s, r) => s + Number((r as { calories_burned: number }).calories_burned), 0);
+          calBal = { in: foodTotals.calories, out: energy.tdee + extra };
+        }
+      }
+      setCalorieBalance(calBal);
 
       setLoading(false);
     })();
@@ -207,7 +247,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error} backHref="/auth/login" backLabel="Sign in" />
         </div>
@@ -227,30 +267,47 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <PageHeader
           title="Dashboard"
           description={`${todayFormatted}${user.email ? ` · ${user.email}` : ""}`}
         />
 
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-theme-border bg-theme-surface/40 px-4 py-3 text-sm">
+          <span className="text-theme-text-muted">
+            Theme:{" "}
+            <span className="font-medium text-theme-text-primary">{themeName}</span>
+          </span>
+          <Link
+            href="/settings/themes"
+            className="font-medium text-theme-accent hover:underline"
+          >
+            Change Theme
+          </Link>
+        </div>
+
         {nutritionGoal && foodTotalsToday && (
           <DashboardFoodWidget goal={nutritionGoal} totals={foodTotalsToday} />
+        )}
+
+        {calorieBalance && (
+          <DashboardCalorieWidget caloriesIn={calorieBalance.in} caloriesOut={calorieBalance.out} />
         )}
 
         {weightWidget && (
           <Link
             href="/weight"
-            className="mt-6 block rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-[#f97316]/60 hover:bg-zinc-900"
+            className="mt-6 block rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-accent/60 hover:bg-theme-surface"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-white">Weight</h2>
-                <p className="mt-2 text-3xl font-bold tabular-nums text-white">
+                <h2 className="text-lg font-semibold text-theme-text-primary">Weight</h2>
+                <p className="mt-2 text-3xl font-bold tabular-nums text-theme-text-primary">
                   {weightWidget.currentLbs.toFixed(1)}{" "}
-                  <span className="text-lg font-medium text-zinc-500">lbs</span>
+                  <span className="text-lg font-medium text-theme-text-muted">lbs</span>
                 </p>
-                <p className="mt-1 text-sm text-zinc-400">Current (latest log)</p>
+                <p className="mt-1 text-sm text-theme-text-muted">Current (latest log)</p>
               </div>
               {weightWidget.onTrack != null && (
                 <span
@@ -258,31 +315,31 @@ export default function DashboardPage() {
                   title={weightWidget.onTrack ? "On track this week" : "Above weekly target"}
                 >
                   {weightWidget.onTrack ? (
-                    <span className="text-[#22c55e]">✓</span>
+                    <span className="text-theme-success">✓</span>
                   ) : (
-                    <span className="text-[#ef4444]">⚠</span>
+                    <span className="text-theme-danger">⚠</span>
                   )}
                 </span>
               )}
             </div>
             <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-zinc-500">This week&apos;s average</dt>
-                <dd className="font-medium text-zinc-200">
+                <dt className="text-theme-text-muted">This week&apos;s average</dt>
+                <dd className="font-medium text-theme-text-primary/90">
                   {weightWidget.weekAvgLbs != null ? `${weightWidget.weekAvgLbs.toFixed(1)} lbs` : "—"}
                 </dd>
               </div>
               <div>
-                <dt className="text-zinc-500">vs last week</dt>
+                <dt className="text-theme-text-muted">vs last week</dt>
                 <dd
                   className={`font-medium tabular-nums ${
                     weightWidget.weekVsLastLbs == null
-                      ? "text-zinc-600"
+                      ? "text-theme-text-muted/80"
                       : weightWidget.weekVsLastLbs < 0
-                        ? "text-[#22c55e]"
+                        ? "text-theme-success"
                         : weightWidget.weekVsLastLbs > 0
-                          ? "text-[#ef4444]"
-                          : "text-zinc-400"
+                          ? "text-theme-danger"
+                          : "text-theme-text-muted"
                   }`}
                 >
                   {weightWidget.weekVsLastLbs != null
@@ -293,12 +350,12 @@ export default function DashboardPage() {
               {weightWidget.goalLbs != null && (
                 <>
                   <div>
-                    <dt className="text-zinc-500">Goal</dt>
-                    <dd className="font-medium text-zinc-200">{weightWidget.goalLbs.toFixed(1)} lbs</dd>
+                    <dt className="text-theme-text-muted">Goal</dt>
+                    <dd className="font-medium text-theme-text-primary/90">{weightWidget.goalLbs.toFixed(1)} lbs</dd>
                   </div>
                   <div>
-                    <dt className="text-zinc-500">Remaining</dt>
-                    <dd className="font-medium text-zinc-200">
+                    <dt className="text-theme-text-muted">Remaining</dt>
+                    <dd className="font-medium text-theme-text-primary/90">
                       {weightWidget.lbsRemaining != null
                         ? weightWidget.lbsRemaining > 0
                           ? `${weightWidget.lbsRemaining.toFixed(1)} lbs to go`
@@ -311,19 +368,19 @@ export default function DashboardPage() {
                 </>
               )}
             </dl>
-            <p className="mt-4 text-sm font-medium text-[#f97316]">Open weight page →</p>
+            <p className="mt-4 text-sm font-medium text-theme-accent">Open weight page →</p>
           </Link>
         )}
 
         {!loggedToday && (
-          <div className="mt-6 rounded-xl border border-[#f97316]/40 bg-[#f97316]/10 p-4">
-            <p className="font-medium text-[#f97316]">No workout logged today yet.</p>
-            <p className="mt-1 text-sm text-zinc-400">
+          <div className="mt-6 rounded-xl border border-theme-accent/40 bg-theme-accent/10 p-4">
+            <p className="font-medium text-theme-accent">No workout logged today yet.</p>
+            <p className="mt-1 text-sm text-theme-text-muted">
               Log a session to keep your streak and see progress over time.
             </p>
             <Link
               href="/workouts/log"
-              className="mt-3 inline-flex items-center rounded-lg bg-[#f97316] px-4 py-2 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+              className="mt-3 inline-flex items-center rounded-lg bg-theme-accent px-4 py-2 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover"
             >
               Log Workout
             </Link>
@@ -333,28 +390,28 @@ export default function DashboardPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <Link
             href="/workouts/log"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-[#f97316]/60 hover:bg-zinc-900"
+            className="rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-accent/60 hover:bg-theme-surface"
           >
-            <h2 className="text-lg font-semibold text-white">Log Workout</h2>
-            <p className="mt-1 text-sm text-zinc-400">
+            <h2 className="text-lg font-semibold text-theme-text-primary">Log Workout</h2>
+            <p className="mt-1 text-sm text-theme-text-muted">
               Record a new workout or continue from a template.
             </p>
           </Link>
           <Link
             href="/progress"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-[#f97316]/60 hover:bg-zinc-900"
+            className="rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-accent/60 hover:bg-theme-surface"
           >
-            <h2 className="text-lg font-semibold text-white">View Progress</h2>
-            <p className="mt-1 text-sm text-zinc-400">
+            <h2 className="text-lg font-semibold text-theme-text-primary">View Progress</h2>
+            <p className="mt-1 text-sm text-theme-text-muted">
               See exercise trends and estimated 1RM over time.
             </p>
           </Link>
           <Link
             href="/reports"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-[#f97316]/60 hover:bg-zinc-900"
+            className="rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-accent/60 hover:bg-theme-surface"
           >
-            <h2 className="text-lg font-semibold text-white">View Reports</h2>
-            <p className="mt-1 text-sm text-zinc-400">
+            <h2 className="text-lg font-semibold text-theme-text-primary">View Reports</h2>
+            <p className="mt-1 text-sm text-theme-text-muted">
               Volume, frequency, bodyweight, and PRs over time.
             </p>
           </Link>
@@ -363,17 +420,17 @@ export default function DashboardPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <Link
             href="/mesocycles"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-700 hover:bg-zinc-900"
+            className="rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-border hover:bg-theme-surface"
           >
-            <h2 className="text-lg font-semibold text-white">Mesocycles</h2>
-            <p className="mt-1 text-sm text-zinc-400">Manage your training blocks and programs.</p>
+            <h2 className="text-lg font-semibold text-theme-text-primary">Mesocycles</h2>
+            <p className="mt-1 text-sm text-theme-text-muted">Manage your training blocks and programs.</p>
           </Link>
           <Link
             href="/workouts/history"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-700 hover:bg-zinc-900"
+            className="rounded-xl border border-theme-border bg-theme-surface/50 p-5 transition hover:border-theme-border hover:bg-theme-surface"
           >
-            <h2 className="text-lg font-semibold text-white">Workout History</h2>
-            <p className="mt-1 text-sm text-zinc-400">Browse and compare past workouts.</p>
+            <h2 className="text-lg font-semibold text-theme-text-primary">Workout History</h2>
+            <p className="mt-1 text-sm text-theme-text-muted">Browse and compare past workouts.</p>
           </Link>
         </div>
       </div>

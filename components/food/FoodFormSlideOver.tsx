@@ -112,10 +112,10 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" aria-hidden onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-zinc-800 bg-[#0a0a0a] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
-          <h2 className="text-lg font-bold text-white">{editFood ? "Edit food" : "Add food"}</h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+      <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-theme-border bg-theme-bg shadow-2xl">
+        <div className="flex items-center justify-between border-b border-theme-border px-5 py-4">
+          <h2 className="text-lg font-bold text-theme-text-primary">{editFood ? "Edit food" : "Add food"}</h2>
+          <button type="button" onClick={onClose} className="rounded-lg p-2 text-theme-text-muted hover:bg-theme-border/90 hover:text-theme-text-primary">
             ✕
           </button>
         </div>
@@ -123,24 +123,24 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
           {err && (
             <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{err}</p>
           )}
-          <label className="block text-sm text-zinc-400">
+          <label className="block text-sm text-theme-text-muted">
             Name
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-semibold text-white"
+              className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 font-semibold text-theme-text-primary"
             />
           </label>
-          <label className="block text-sm text-zinc-400">
+          <label className="block text-sm text-theme-text-muted">
             Brand (optional)
             <input
               value={brand}
               onChange={(e) => setBrand(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-white"
+              className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-theme-text-primary"
             />
           </label>
           <div>
-            <span className="text-sm text-zinc-400">Serving size</span>
+            <span className="text-sm text-theme-text-muted">Serving size</span>
             <div className="mt-2 flex gap-2">
               <input
                 type="number"
@@ -148,16 +148,16 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
                 step="any"
                 value={servingSize}
                 onChange={(e) => setServingSize(e.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-bold text-white"
+                className="min-w-0 flex-1 rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 font-bold text-theme-text-primary"
               />
-              <div className="flex rounded-lg border border-zinc-700 p-0.5">
+              <div className="flex rounded-lg border border-theme-border p-0.5">
                 {(["g", "oz"] as const).map((u) => (
                   <button
                     key={u}
                     type="button"
                     onClick={() => setServingUnit(u)}
                     className={`rounded-md px-3 py-2 text-sm font-bold ${
-                      servingUnit === u ? "bg-[#f97316] text-[#0a0a0a]" : "text-zinc-400"
+                      servingUnit === u ? "bg-theme-accent text-theme-on-accent" : "text-theme-text-muted"
                     }`}
                   >
                     {u}
@@ -166,7 +166,7 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
               </div>
             </div>
           </div>
-          <label className="block text-sm text-zinc-400">
+          <label className="block text-sm text-theme-text-muted">
             Calories (per serving)
             <input
               type="number"
@@ -174,11 +174,11 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
               step="1"
               value={calories}
               onChange={(e) => setCalories(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-lg font-bold text-white"
+              className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-lg font-bold text-theme-text-primary"
             />
           </label>
           <div className="grid grid-cols-3 gap-2">
-            <label className="text-sm text-zinc-400">
+            <label className="text-sm text-theme-text-muted">
               Protein (g)
               <input
                 type="number"
@@ -186,10 +186,10 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
                 step="0.1"
                 value={protein}
                 onChange={(e) => setProtein(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-2 font-bold text-[#3b82f6]"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-2 py-2 font-bold text-theme-macro-protein"
               />
             </label>
-            <label className="text-sm text-zinc-400">
+            <label className="text-sm text-theme-text-muted">
               Carbs (g)
               <input
                 type="number"
@@ -197,10 +197,10 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
                 step="0.1"
                 value={carbs}
                 onChange={(e) => setCarbs(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-2 font-bold text-[#eab308]"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-2 py-2 font-bold text-theme-macro-carbs"
               />
             </label>
-            <label className="text-sm text-zinc-400">
+            <label className="text-sm text-theme-text-muted">
               Fat (g)
               <input
                 type="number"
@@ -208,26 +208,26 @@ export function FoodFormSlideOver({ open, onClose, userId, editFood, onSaved }: 
                 step="0.1"
                 value={fat}
                 onChange={(e) => setFat(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-2 py-2 font-bold text-[#f97316]"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-2 py-2 font-bold text-theme-accent"
               />
             </label>
           </div>
-          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3">
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-theme-border bg-theme-surface/50 px-4 py-3">
             <input
               type="checkbox"
               checked={isPublic}
               onChange={(e) => setIsPublic(e.target.checked)}
-              className="h-4 w-4 rounded border-zinc-600"
+              className="h-4 w-4 rounded border-theme-border/80"
             />
-            <span className="text-sm font-medium text-zinc-300">Share publicly (visible in everyone&apos;s library)</span>
+            <span className="text-sm font-medium text-theme-text-muted">Share publicly (visible in everyone&apos;s library)</span>
           </label>
         </div>
-        <div className="border-t border-zinc-800 px-5 py-4">
+        <div className="border-t border-theme-border px-5 py-4">
           <button
             type="button"
             onClick={() => void submit()}
             disabled={saving}
-            className="w-full rounded-xl bg-[#f97316] py-3 text-sm font-bold text-[#0a0a0a] disabled:opacity-50"
+            className="w-full rounded-xl bg-theme-accent py-3 text-sm font-bold text-theme-on-accent disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save"}
           </button>

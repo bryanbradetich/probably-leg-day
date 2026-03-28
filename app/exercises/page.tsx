@@ -118,7 +118,7 @@ export default function ExercisesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
           <ErrorState message={error} retry={() => window.location.reload()} backHref="/dashboard" backLabel="Dashboard" />
         </div>
@@ -127,7 +127,7 @@ export default function ExercisesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <>
           <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
             <PageHeader title="Exercise Library" description="Browse the exercise library." />
@@ -138,14 +138,14 @@ export default function ExercisesPage() {
                 placeholder="Search by name..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               />
               <select
                 value={equipmentFilter}
                 onChange={(e) =>
                   setEquipmentFilter((e.target.value || "") as "" | EquipmentType)
                 }
-                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               >
                 {EQUIPMENT_OPTIONS.map((o) => (
                   <option key={o.value || "all"} value={o.value}>
@@ -156,7 +156,7 @@ export default function ExercisesPage() {
               <select
                 value={muscleGroupFilter}
                 onChange={(e) => setMuscleGroupFilter(e.target.value)}
-                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               >
                 {MUSCLE_GROUP_OPTIONS.map((o) => (
                   <option key={o.value || "all"} value={o.value}>
@@ -169,7 +169,7 @@ export default function ExercisesPage() {
                 onChange={(e) =>
                   setTypeFilter((e.target.value || "") as "" | ExerciseType)
                 }
-                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               >
                 {TYPE_OPTIONS.map((o) => (
                   <option key={o.value || "all"} value={o.value}>
@@ -179,9 +179,9 @@ export default function ExercisesPage() {
           </select>
             </div>
 
-            <p className="mt-4 text-xs text-zinc-500">
+            <p className="mt-4 text-xs text-theme-text-muted">
               Showing{" "}
-              <span className="font-medium text-zinc-200">
+              <span className="font-medium text-theme-text-primary/90">
                 {filtered.length}
               </span>{" "}
               {filtered.length === 1 ? "exercise" : "exercises"}
@@ -191,7 +191,7 @@ export default function ExercisesPage() {
               {filtered.map((ex) => (
                 <li
                   key={ex.id}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-3 transition hover:border-[#f97316]/60 hover:bg-zinc-900"
+                  className="flex items-center gap-3 rounded-lg border border-theme-border bg-theme-surface/50 px-4 py-3 transition hover:border-theme-accent/60 hover:bg-theme-surface"
                 >
                   <button
                     type="button"
@@ -200,7 +200,7 @@ export default function ExercisesPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium text-white">
+                        <div className="truncate text-sm font-medium text-theme-text-primary">
                           {ex.name}
                         </div>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -216,7 +216,7 @@ export default function ExercisesPage() {
                           {ex.muscle_groups?.map((mg) => (
                             <span
                               key={mg}
-                              className="inline-flex items-center rounded-full bg-zinc-800 px-2 py-0.5 font-medium text-zinc-200"
+                              className="inline-flex items-center rounded-full bg-theme-border/90 px-2 py-0.5 font-medium text-theme-text-primary/90"
                             >
                               <span className="capitalize">{mg}</span>
                             </span>
@@ -237,7 +237,7 @@ export default function ExercisesPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedExerciseId(ex.id)}
-                    className="rounded bg-[#f97316] px-3 py-1.5 text-sm font-medium text-white transition hover:bg-[#ea580c]"
+                    className="rounded bg-theme-accent px-3 py-1.5 text-sm font-medium text-theme-on-accent transition hover:bg-theme-accent-hover"
                   >
                     View
                   </button>
@@ -255,7 +255,7 @@ export default function ExercisesPage() {
               </div>
             )}
             {exercises.length > 0 && filtered.length === 0 && (
-              <div className="mt-8 rounded-xl border border-dashed border-zinc-700 py-8 text-center text-zinc-400">
+              <div className="mt-8 rounded-xl border border-dashed border-theme-border py-8 text-center text-theme-text-muted">
                 No exercises match your filters. Try different search or filters.
               </div>
             )}
@@ -273,38 +273,38 @@ export default function ExercisesPage() {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="exercise-detail-title"
-                className="fixed inset-0 z-50 h-full w-full border-l border-zinc-800 bg-[#0a0a0a] shadow-xl sm:inset-[auto_0_0_0_auto] sm:left-auto sm:max-w-md"
+                className="fixed inset-0 z-50 h-full w-full border-l border-theme-border bg-theme-bg shadow-xl sm:inset-[auto_0_0_0_auto] sm:left-auto sm:max-w-md"
               >
                 <div className="flex h-full flex-col p-6">
-                  <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-                    <h2 id="exercise-detail-title" className="text-xl font-bold text-white">
+                  <div className="flex items-center justify-between border-b border-theme-border pb-4">
+                    <h2 id="exercise-detail-title" className="text-xl font-bold text-theme-text-primary">
                       {selectedExercise.name}
                     </h2>
                     <button
                       type="button"
                       onClick={() => setSelectedExerciseId(null)}
-                      className="rounded p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-white"
+                      className="rounded p-2 text-theme-text-muted transition hover:bg-theme-border/90 hover:text-theme-text-primary"
                       aria-label="Close panel"
                     >
                       <span className="text-xl leading-none">×</span>
                     </button>
                   </div>
-                  <div className="mt-4 flex-1 space-y-4 overflow-y-auto text-zinc-300">
+                  <div className="mt-4 flex-1 space-y-4 overflow-y-auto text-theme-text-muted">
                     {selectedExercise.description && (
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-500">Description</h3>
+                        <h3 className="text-sm font-medium text-theme-text-muted">Description</h3>
                         <p className="mt-1">{selectedExercise.description}</p>
                       </div>
                     )}
                     <div>
-                      <h3 className="text-sm font-medium text-zinc-500">Type</h3>
+                      <h3 className="text-sm font-medium text-theme-text-muted">Type</h3>
                       <p className="mt-1 capitalize">
                         {selectedExercise.type?.replace("_", " ") ?? "—"}
                       </p>
                     </div>
                     {selectedExercise.equipment && (
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-500">Equipment</h3>
+                        <h3 className="text-sm font-medium text-theme-text-muted">Equipment</h3>
                         <p className="mt-1 capitalize">
                           {selectedExercise.equipment.replace("_", " ")}
                         </p>
@@ -312,7 +312,7 @@ export default function ExercisesPage() {
                     )}
                     {selectedExercise.muscle_groups?.length ? (
                       <div>
-                        <h3 className="text-sm font-medium text-zinc-500">Muscle groups</h3>
+                        <h3 className="text-sm font-medium text-theme-text-muted">Muscle groups</h3>
                         <p className="mt-1 capitalize">
                           {selectedExercise.muscle_groups.join(", ")}
                         </p>

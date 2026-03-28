@@ -25,7 +25,11 @@ import { scaledNutrients, sumNutrients, formatKcal, macroCaloriesFromGrams } fro
 import { addDays, mondayOfWeek, localISODate, formatShortDate, dayOfWeekLabel } from "@/lib/weight-helpers";
 import type { DailyFoodLogWithFood, NutritionGoal } from "@/types";
 
-const MACRO_COLORS = { protein: "#3b82f6", carbs: "#eab308", fat: "#f97316" };
+const MACRO_COLORS = {
+  protein: "var(--macro-protein)",
+  carbs: "var(--macro-carbs)",
+  fat: "var(--macro-fat)",
+};
 
 export default function FoodWeeklyPage() {
   const router = useRouter();
@@ -164,7 +168,7 @@ export default function FoodWeeklyPage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <ErrorState message={error ?? "Session expired."} backHref="/auth/login" backLabel="Sign in" />
         </div>
@@ -173,16 +177,16 @@ export default function FoodWeeklyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PageHeader title="Weekly summary" description="Macros by day and week vs your calorie goal." />
 
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link href="/food" className="font-medium text-[#f97316] hover:underline">
+          <Link href="/food" className="font-medium text-theme-accent hover:underline">
             Today&apos;s log
           </Link>
-          <span className="text-zinc-600">·</span>
-          <Link href="/food/library" className="font-medium text-[#f97316] hover:underline">
+          <span className="text-theme-text-muted/80">·</span>
+          <Link href="/food/library" className="font-medium text-theme-accent hover:underline">
             Food library
           </Link>
         </div>
@@ -208,27 +212,27 @@ export default function FoodWeeklyPage() {
             <button
               type="button"
               onClick={() => setWeekMonday((w) => addDays(w, -7))}
-              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800"
+              className="rounded-lg border border-theme-border px-3 py-2 text-sm font-bold text-theme-text-primary hover:bg-theme-border/90"
             >
               ← Prev week
             </button>
             <button
               type="button"
               onClick={() => setWeekMonday((w) => addDays(w, 7))}
-              className="rounded-lg border border-zinc-700 px-3 py-2 text-sm font-bold text-white hover:bg-zinc-800"
+              className="rounded-lg border border-theme-border px-3 py-2 text-sm font-bold text-theme-text-primary hover:bg-theme-border/90"
             >
               Next week →
             </button>
           </div>
-          <p className="text-sm font-bold text-zinc-400">
+          <p className="text-sm font-bold text-theme-text-muted">
             {formatShortDate(weekMonday)} – {formatShortDate(weekEnd)}
           </p>
         </div>
 
-        <div className="mt-8 overflow-x-auto rounded-xl border border-zinc-800">
+        <div className="mt-8 overflow-x-auto rounded-xl border border-theme-border">
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-800 bg-zinc-900 text-zinc-400">
+              <tr className="border-b border-theme-border bg-theme-surface text-theme-text-muted">
                 <th className="px-3 py-2 font-semibold">Day</th>
                 <th className="px-3 py-2 font-semibold">Calories</th>
                 <th className="px-3 py-2 font-semibold">Protein</th>
@@ -239,24 +243,24 @@ export default function FoodWeeklyPage() {
             </thead>
             <tbody>
               {dayRows.map((r) => (
-                <tr key={r.iso} className="border-b border-zinc-800/80 bg-zinc-950/50">
-                  <td className="px-3 py-2 font-bold text-white">
-                    {r.label} <span className="text-xs font-normal text-zinc-500">({formatShortDate(r.iso)})</span>
+                <tr key={r.iso} className="border-b border-theme-border/80 bg-theme-input-bg/50">
+                  <td className="px-3 py-2 font-bold text-theme-text-primary">
+                    {r.label} <span className="text-xs font-normal text-theme-text-muted">({formatShortDate(r.iso)})</span>
                   </td>
                   <td
                     className={`px-3 py-2 font-bold tabular-nums ${
-                      goal && r.over ? "text-[#ef4444]" : "text-white"
+                      goal && r.over ? "text-theme-danger" : "text-theme-text-primary"
                     }`}
                   >
                     {formatKcal(r.calories)}
                   </td>
-                  <td className="px-3 py-2 font-bold tabular-nums text-[#3b82f6]">{r.protein_g.toFixed(0)}g</td>
-                  <td className="px-3 py-2 font-bold tabular-nums text-[#eab308]">{r.carbs_g.toFixed(0)}g</td>
-                  <td className="px-3 py-2 font-bold tabular-nums text-[#f97316]">{r.fat_g.toFixed(0)}g</td>
+                  <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-protein">{r.protein_g.toFixed(0)}g</td>
+                  <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-carbs">{r.carbs_g.toFixed(0)}g</td>
+                  <td className="px-3 py-2 font-bold tabular-nums text-theme-accent">{r.fat_g.toFixed(0)}g</td>
                   {goal && (
                     <td
                       className={`px-3 py-2 font-bold tabular-nums ${
-                        r.over ? "text-[#ef4444]" : "text-[#22c55e]"
+                        r.over ? "text-theme-danger" : "text-theme-success"
                       }`}
                     >
                       {r.vsGoal > 0.5
@@ -268,21 +272,21 @@ export default function FoodWeeklyPage() {
                   )}
                 </tr>
               ))}
-              <tr className="bg-zinc-900/90">
-                <td className="px-3 py-3 font-bold text-white">Week avg / day</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-white">{formatKcal(weekAvg.calories)}</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#3b82f6]">{weekAvg.protein_g.toFixed(0)}g</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#eab308]">{weekAvg.carbs_g.toFixed(0)}g</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#f97316]">{weekAvg.fat_g.toFixed(0)}g</td>
-                {goal && <td className="px-3 py-3 text-zinc-500">—</td>}
+              <tr className="bg-theme-surface/90">
+                <td className="px-3 py-3 font-bold text-theme-text-primary">Week avg / day</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-text-primary">{formatKcal(weekAvg.calories)}</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-protein">{weekAvg.protein_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-carbs">{weekAvg.carbs_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-accent">{weekAvg.fat_g.toFixed(0)}g</td>
+                {goal && <td className="px-3 py-3 text-theme-text-muted">—</td>}
               </tr>
-              <tr className="bg-zinc-900">
-                <td className="px-3 py-3 font-bold text-white">Week totals</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-white">{formatKcal(weekTotals.calories)}</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#3b82f6]">{weekTotals.protein_g.toFixed(0)}g</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#eab308]">{weekTotals.carbs_g.toFixed(0)}g</td>
-                <td className="px-3 py-3 font-bold tabular-nums text-[#f97316]">{weekTotals.fat_g.toFixed(0)}g</td>
-                {goal && <td className="px-3 py-3 text-zinc-500">—</td>}
+              <tr className="bg-theme-surface">
+                <td className="px-3 py-3 font-bold text-theme-text-primary">Week totals</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-text-primary">{formatKcal(weekTotals.calories)}</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-protein">{weekTotals.protein_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-carbs">{weekTotals.carbs_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 font-bold tabular-nums text-theme-accent">{weekTotals.fat_g.toFixed(0)}g</td>
+                {goal && <td className="px-3 py-3 text-theme-text-muted">—</td>}
               </tr>
             </tbody>
           </table>
@@ -312,8 +316,8 @@ export default function FoodWeeklyPage() {
                         );
                       }}
                     />
-                    <Bar dataKey="calories" name="Logged" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={48} />
-                    <Bar dataKey="goal" name="Goal" fill="#3f3f46" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                    <Bar dataKey="calories" name="Logged" fill={CHART.primary} radius={[4, 4, 0, 0]} maxBarSize={48} />
+                    <Bar dataKey="goal" name="Goal" fill="var(--border)" radius={[4, 4, 0, 0]} maxBarSize={48} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -340,7 +344,7 @@ export default function FoodWeeklyPage() {
                       paddingAngle={2}
                     >
                       {pieData.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} stroke="#18181b" />
+                        <Cell key={entry.name} fill={entry.color} stroke="var(--surface)" />
                       ))}
                     </Pie>
                     <Tooltip
@@ -356,7 +360,7 @@ export default function FoodWeeklyPage() {
                     />
                     <Legend
                       wrapperStyle={{ color: CHART.axis }}
-                      formatter={(value) => <span className="text-zinc-300">{value}</span>}
+                      formatter={(value) => <span className="text-theme-text-muted">{value}</span>}
                     />
                   </PieChart>
                 </ResponsiveContainer>

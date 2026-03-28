@@ -1014,18 +1014,18 @@ export default function LogWorkoutPage() {
   if (phase === "start") {
     const hasDraft = draftCheckDone && existingDraft;
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-theme-text-primary tracking-tight">
             Log Workout
           </h1>
-          <p className="mt-2 text-zinc-400">
+          <p className="mt-2 text-theme-text-muted">
             Start from a template or begin an empty workout.
           </p>
 
           {hasDraft && (
-            <div className="mt-6 rounded-xl border-2 border-[#f97316] bg-[#f97316]/10 p-4 shadow-lg">
-              <p className="text-sm font-medium text-zinc-100">
+            <div className="mt-6 rounded-xl border-2 border-theme-accent bg-theme-accent/10 p-4 shadow-lg">
+              <p className="text-sm font-medium text-theme-text-primary">
                 You have an unfinished workout from{" "}
                 {formatTimeAgo(existingDraft.started_at)}. Would you like to
                 continue?
@@ -1034,14 +1034,14 @@ export default function LogWorkoutPage() {
                 <button
                   type="button"
                   onClick={() => void continueDraft()}
-                  className="rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+                  className="rounded-xl bg-theme-accent px-4 py-2.5 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover"
                 >
                   Continue workout
                 </button>
                 <button
                   type="button"
                   onClick={() => void discardDraft()}
-                  className="rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+                  className="rounded-xl border border-theme-border/80 bg-theme-surface px-4 py-2.5 text-sm font-medium text-theme-text-primary/90 hover:bg-theme-border/90"
                 >
                   Start fresh
                 </button>
@@ -1051,7 +1051,7 @@ export default function LogWorkoutPage() {
 
           <div className="mt-8 space-y-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">
+              <label className="mb-2 block text-sm font-medium text-theme-text-muted">
                 Workout name
               </label>
               <input
@@ -1059,16 +1059,16 @@ export default function LogWorkoutPage() {
                 value={workoutName}
                 onChange={(e) => setWorkoutName(e.target.value)}
                 placeholder="e.g. Push Day"
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-lg text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                className="w-full rounded-xl border border-theme-border bg-theme-surface px-4 py-3 text-lg text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-2 focus:ring-theme-accent"
               />
             </div>
 
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <p className="mb-3 text-sm font-medium text-zinc-300">
+            <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4">
+              <p className="mb-3 text-sm font-medium text-theme-text-muted">
                 Start from template (optional)
               </p>
               <select
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
                 value={templateId ?? ""}
                 onChange={(e) => {
                   const tid = e.target.value || null;
@@ -1089,12 +1089,12 @@ export default function LogWorkoutPage() {
             </div>
 
             {mesocycles.length > 0 && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-                <p className="mb-3 text-sm font-medium text-zinc-300">
+              <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4">
+                <p className="mb-3 text-sm font-medium text-theme-text-muted">
                   Mesocycle (optional)
                 </p>
                 <select
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                  className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
                   value={mesocycleId ?? ""}
                   onChange={(e) => setMesocycleId(e.target.value || null)}
                 >
@@ -1118,7 +1118,7 @@ export default function LogWorkoutPage() {
                   : undefined
               }
               onClick={() => startWorkout(templateId, workoutName)}
-              className="w-full rounded-xl bg-[#f97316] py-4 text-lg font-semibold text-[#0a0a0a] shadow-lg transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-xl bg-theme-accent py-4 text-lg font-semibold text-theme-on-accent shadow-lg transition hover:bg-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-theme-bg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {templateId ? "Start from template" : "Start empty workout"}
             </button>
@@ -1130,45 +1130,45 @@ export default function LogWorkoutPage() {
 
   if (phase === "summary" && summary) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
-          <h1 className="text-2xl font-bold text-white">Workout complete</h1>
-          <div className="mt-8 space-y-6 rounded-xl border border-zinc-800 bg-zinc-900/30 p-6">
-            <p className="text-3xl font-bold text-[#f97316]">
+          <h1 className="text-2xl font-bold text-theme-text-primary">Workout complete</h1>
+          <div className="mt-8 space-y-6 rounded-xl border border-theme-border bg-theme-surface/30 p-6">
+            <p className="text-3xl font-bold text-theme-accent">
               {formatDuration(summary.durationSeconds)}
             </p>
-            <p className="text-zinc-400">Duration</p>
+            <p className="text-theme-text-muted">Duration</p>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div>
-                <p className="text-xl font-semibold text-white">
+                <p className="text-xl font-semibold text-theme-text-primary">
                   {summary.exercisesCompleted}
                 </p>
-                <p className="text-sm text-zinc-500">Exercises</p>
+                <p className="text-sm text-theme-text-muted">Exercises</p>
               </div>
               <div>
-                <p className="text-xl font-semibold text-white">
+                <p className="text-xl font-semibold text-theme-text-primary">
                   {summary.totalSets}
                 </p>
-                <p className="text-sm text-zinc-500">Sets</p>
+                <p className="text-sm text-theme-text-muted">Sets</p>
               </div>
               <div>
-                <p className="text-xl font-semibold text-white">
+                <p className="text-xl font-semibold text-theme-text-primary">
                   {(summary.totalVolume * 2.20462).toLocaleString(
                     undefined,
                     { maximumFractionDigits: 1 }
                   )}
                 </p>
-                <p className="text-sm text-zinc-500">Total volume (lbs)</p>
+                <p className="text-sm text-theme-text-muted">Total volume (lbs)</p>
               </div>
             </div>
             {summary.prs.length > 0 && (
-              <div className="rounded-lg border-2 border-[#f97316] bg-[#f97316]/10 p-4">
-                <p className="mb-2 font-semibold text-[#f97316]">
+              <div className="rounded-lg border-2 border-theme-accent bg-theme-accent/10 p-4">
+                <p className="mb-2 font-semibold text-theme-accent">
                   New personal records
                 </p>
                 <ul className="space-y-1">
                   {summary.prs.map((pr, i) => (
-                    <li key={i} className="text-[#f97316]">
+                    <li key={i} className="text-theme-accent">
                       {pr.exerciseName}: {pr.type.replace("_", " ")} —{" "}
                       {pr.type === "max_weight"
                         ? `${kgToLbs(pr.value)?.toFixed(1) ?? pr.value} lbs`
@@ -1182,14 +1182,14 @@ export default function LogWorkoutPage() {
             )}
             <button
               type="button"
-              className="mt-4 block w-full rounded-xl bg-[#f97316] py-3 text-center font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+              className="mt-4 block w-full rounded-xl bg-theme-accent py-3 text-center font-semibold text-theme-on-accent hover:bg-theme-accent-hover"
               onClick={() => void logAnotherWorkout()}
             >
               Log another workout
             </button>
             <Link
               href="/workouts/history"
-              className="block w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 text-center font-medium text-zinc-300 hover:bg-zinc-700"
+              className="block w-full rounded-xl border border-theme-border/80 bg-theme-border/90 py-3 text-center font-medium text-theme-text-muted hover:bg-theme-border"
             >
               View history
             </Link>
@@ -1200,7 +1200,7 @@ export default function LogWorkoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
@@ -1208,13 +1208,13 @@ export default function LogWorkoutPage() {
               type="text"
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
-              className="w-full bg-transparent text-xl font-bold text-white focus:outline-none focus:ring-0"
+              className="w-full bg-transparent text-xl font-bold text-theme-text-primary focus:outline-none focus:ring-0"
             />
-            <p className="text-2xl font-bold tabular-nums text-[#f97316]">
+            <p className="text-2xl font-bold tabular-nums text-theme-accent">
               {formatDuration(elapsedSeconds)}
             </p>
           </div>
-          <div className="shrink-0 pt-1 text-xs text-zinc-400">
+          <div className="shrink-0 pt-1 text-xs text-theme-text-muted">
             {saveStatus === "saving" && <span>Saving…</span>}
             {saveStatus === "saved" && <span>Saved</span>}
             {saveStatus === "error" && (
@@ -1224,15 +1224,15 @@ export default function LogWorkoutPage() {
         </div>
 
         {restTimer && (
-          <div className="mb-4 flex items-center justify-between rounded-xl border-2 border-[#f97316] bg-[#f97316]/10 px-4 py-3">
-            <span className="font-semibold text-[#f97316]">
+          <div className="mb-4 flex items-center justify-between rounded-xl border-2 border-theme-accent bg-theme-accent/10 px-4 py-3">
+            <span className="font-semibold text-theme-accent">
               Rest: {formatDuration(restTimer.secondsLeft)}
               {restTimer.label ? ` — ${restTimer.label}` : ""}
             </span>
             <button
               type="button"
               onClick={() => setRestTimer(null)}
-              className="rounded-lg bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+              className="rounded-lg bg-theme-border/90 px-3 py-1.5 text-sm text-theme-text-muted hover:bg-theme-border"
             >
               Dismiss
             </button>
@@ -1243,18 +1243,18 @@ export default function LogWorkoutPage() {
           {logEntries.map((entry, exIndex) => (
             <div
               key={`${entry.exercise.id}-${exIndex}`}
-              className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
+              className="rounded-xl border border-theme-border bg-theme-surface/50 p-4"
             >
-              <p className="font-semibold text-white">{entry.exercise.name}</p>
+              <p className="font-semibold text-theme-text-primary">{entry.exercise.name}</p>
               {historyByExercise[entry.exercise.id]?.length ? (
-                <div className="mt-1 space-y-0.5 text-[11px] leading-snug text-zinc-500">
+                <div className="mt-1 space-y-0.5 text-[11px] leading-snug text-theme-text-muted">
                   {historyByExercise[entry.exercise.id].map((line, hi) => (
                     <p key={hi}>{line}</p>
                   ))}
                 </div>
               ) : null}
               {entry.templateTarget && (
-                <p className="mt-0.5 text-sm text-zinc-500">
+                <p className="mt-0.5 text-sm text-theme-text-muted">
                   Target: {entry.templateTarget.target_sets} sets
                   {entry.exercise.type === "reps_sets"
                     ? ` × ${entry.templateTarget.target_reps ?? "?"} reps`
@@ -1271,8 +1271,8 @@ export default function LogWorkoutPage() {
                     onClick={() => setWeightLoggingChoice(exIndex, "total")}
                     className={`rounded-lg px-3 py-1.5 text-sm ${
                       entry.weightLoggingChoice === "total"
-                        ? "bg-[#f97316] text-[#0a0a0a]"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                        ? "bg-theme-accent text-theme-on-accent"
+                        : "bg-theme-border/90 text-theme-text-muted hover:bg-theme-border"
                     }`}
                   >
                     Total weight
@@ -1282,8 +1282,8 @@ export default function LogWorkoutPage() {
                     onClick={() => setWeightLoggingChoice(exIndex, "per_hand")}
                     className={`rounded-lg px-3 py-1.5 text-sm ${
                       entry.weightLoggingChoice === "per_hand"
-                        ? "bg-[#f97316] text-[#0a0a0a]"
-                        : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+                        ? "bg-theme-accent text-theme-on-accent"
+                        : "bg-theme-border/90 text-theme-text-muted hover:bg-theme-border"
                     }`}
                   >
                     Per hand
@@ -1294,9 +1294,9 @@ export default function LogWorkoutPage() {
                 {entry.sets.map((set, setIndex) => (
                   <div
                     key={setIndex}
-                    className="flex flex-wrap items-center gap-2 rounded-lg bg-zinc-800/50 p-2"
+                    className="flex flex-wrap items-center gap-2 rounded-lg bg-theme-surface/50 p-2"
                   >
-                    <span className="w-8 text-sm text-zinc-500">
+                    <span className="w-8 text-sm text-theme-text-muted">
                       Set {setIndex + 1}
                     </span>
                     {entry.exercise.type === "reps_sets" ? (
@@ -1313,7 +1313,7 @@ export default function LogWorkoutPage() {
                               parseInt(e.target.value, 10) || null
                             )
                           }
-                          className="h-10 w-20 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                          className="h-10 w-20 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                         />
                         <input
                           type="number"
@@ -1332,9 +1332,9 @@ export default function LogWorkoutPage() {
                               )
                             )
                           }
-                          className="h-10 w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                          className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                         />
-                        <span className="text-zinc-500">lbs</span>
+                        <span className="text-theme-text-muted">lbs</span>
                       </>
                     ) : (
                       <input
@@ -1349,7 +1349,7 @@ export default function LogWorkoutPage() {
                             parseInt(e.target.value, 10) || null
                           )
                         }
-                        className="h-10 w-24 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                        className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                       />
                     )}
                     <input
@@ -1366,7 +1366,7 @@ export default function LogWorkoutPage() {
                           parseInt(e.target.value, 10) || null
                         )
                       }
-                      className="h-10 w-14 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-center text-white"
+                      className="h-10 w-14 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                     />
                     {entry.templateTarget?.target_rest_seconds ? (
                       <button
@@ -1377,7 +1377,7 @@ export default function LogWorkoutPage() {
                             entry.exercise.name
                           )
                         }
-                        className="rounded-lg bg-zinc-700 px-2 py-1.5 text-xs text-zinc-300 hover:bg-zinc-600"
+                        className="rounded-lg bg-zinc-700 px-2 py-1.5 text-xs text-theme-text-muted hover:bg-zinc-600"
                       >
                         Rest timer
                       </button>
@@ -1385,7 +1385,7 @@ export default function LogWorkoutPage() {
                     <button
                       type="button"
                       onClick={() => removeSet(exIndex, setIndex)}
-                      className="rounded p-1 text-zinc-500 hover:bg-zinc-700 hover:text-red-400"
+                      className="rounded p-1 text-theme-text-muted hover:bg-theme-border hover:text-red-400"
                       aria-label="Remove set"
                     >
                       ×
@@ -1396,7 +1396,7 @@ export default function LogWorkoutPage() {
               <button
                 type="button"
                 onClick={() => addSet(exIndex)}
-                className="mt-3 rounded-lg border border-dashed border-zinc-600 py-2 w-full text-sm text-zinc-400 hover:border-[#f97316] hover:text-[#f97316]"
+                className="mt-3 rounded-lg border border-dashed border-theme-border/80 py-2 w-full text-sm text-theme-text-muted hover:border-theme-accent hover:text-theme-accent"
               >
                 Add set
               </button>
@@ -1406,7 +1406,7 @@ export default function LogWorkoutPage() {
           <button
             type="button"
             onClick={() => setPickerOpen(true)}
-            className="w-full rounded-xl border-2 border-dashed border-zinc-600 py-4 text-zinc-400 hover:border-[#f97316] hover:text-[#f97316]"
+            className="w-full rounded-xl border-2 border-dashed border-theme-border/80 py-4 text-theme-text-muted hover:border-theme-accent hover:text-theme-accent"
           >
             + Add exercise
           </button>
@@ -1416,7 +1416,7 @@ export default function LogWorkoutPage() {
           <button
             type="button"
             onClick={finishWorkout}
-            className="flex-1 rounded-xl bg-[#f97316] py-4 text-lg font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+            className="flex-1 rounded-xl bg-theme-accent py-4 text-lg font-semibold text-theme-on-accent hover:bg-theme-accent-hover"
           >
             Finish workout
           </button>
@@ -1431,8 +1431,8 @@ export default function LogWorkoutPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-zinc-800 bg-[#0a0a0a] p-4 shadow-xl">
-              <h2 className="mb-4 text-lg font-bold text-white">
+            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-theme-border bg-theme-bg p-4 shadow-xl">
+              <h2 className="mb-4 text-lg font-bold text-theme-text-primary">
                 Add exercise
               </h2>
               <ExercisePicker

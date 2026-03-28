@@ -76,28 +76,28 @@ export default function WorkoutTemplatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-bold text-theme-text-primary tracking-tight">
             Workout Templates
           </h1>
           <Link
             href="/workouts/templates/new"
-            className="inline-flex items-center justify-center rounded-lg bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-[#0a0a0a] shadow transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+            className="inline-flex items-center justify-center rounded-lg bg-theme-accent px-4 py-2.5 text-sm font-semibold text-theme-on-accent shadow transition hover:bg-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-theme-bg"
           >
             New Template
           </Link>
         </div>
 
         {loading ? (
-          <p className="mt-6 text-zinc-500">Loading templates...</p>
+          <p className="mt-6 text-theme-text-muted">Loading templates...</p>
         ) : templates.length === 0 ? (
-          <div className="mt-12 rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
-            <p className="text-zinc-400">No templates yet.</p>
+          <div className="mt-12 rounded-xl border border-theme-border bg-theme-surface/50 p-12 text-center">
+            <p className="text-theme-text-muted">No templates yet.</p>
             <Link
               href="/workouts/templates/new"
-              className="mt-4 inline-block text-[#f97316] hover:underline"
+              className="mt-4 inline-block text-theme-accent hover:underline"
             >
               Create your first template
             </Link>
@@ -107,11 +107,11 @@ export default function WorkoutTemplatesPage() {
             {templates.map((t) => (
               <li
                 key={t.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-900/30 px-4 py-4 sm:px-5"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-theme-border bg-theme-surface/30 px-4 py-4 sm:px-5"
               >
                 <div>
-                  <p className="font-semibold text-white">{t.name}</p>
-                  <p className="mt-0.5 text-sm text-zinc-500">
+                  <p className="font-semibold text-theme-text-primary">{t.name}</p>
+                  <p className="mt-0.5 text-sm text-theme-text-muted">
                     {t.exercise_count} exercise{t.exercise_count !== 1 ? "s" : ""}
                     {t.mesocycles?.name ? ` · ${t.mesocycles.name}` : ""}
                     {t.day_of_week != null ? ` · ${DAYS[t.day_of_week]}` : ""}
@@ -120,7 +120,7 @@ export default function WorkoutTemplatesPage() {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/workouts/templates/${t.id}/edit`}
-                    className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    className="rounded-lg border border-theme-border/80 bg-theme-border/90 px-3 py-2 text-sm font-medium text-theme-text-muted hover:bg-theme-border hover:text-theme-text-primary"
                   >
                     Edit
                   </Link>

@@ -214,3 +214,33 @@ export interface NutritionGoal {
 
 /** Log row from Supabase with joined food */
 export type DailyFoodLogWithFood = DailyFoodLog & { foods: Food };
+
+export type BiologicalSex = "male" | "female";
+
+export type ActivityLevel =
+  | "sedentary"
+  | "lightly_active"
+  | "moderately_active"
+  | "very_active"
+  | "custom";
+
+/** profiles row fields used for BMR/TDEE (subset) */
+export interface ProfileCalorieFields {
+  id: string;
+  height_cm: number | null;
+  date_of_birth: string | null;
+  biological_sex: BiologicalSex | null;
+  activity_level: ActivityLevel;
+  custom_activity_multiplier: number | null;
+}
+
+export interface CalorieBurn {
+  id: string;
+  user_id: string;
+  logged_date: string;
+  activity_name: string;
+  calories_burned: number;
+  duration_minutes: number | null;
+  notes: string | null;
+  created_at: string;
+}

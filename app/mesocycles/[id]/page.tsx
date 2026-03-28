@@ -34,9 +34,9 @@ function formatDuration(seconds: number | null | undefined): string {
 
 function StatusBadge({ status }: { status: Mesocycle["status"] }) {
   const styles: Record<string, string> = {
-    active: "bg-[#f97316]/20 text-[#f97316] border-[#f97316]/40",
+    active: "bg-theme-accent/20 text-theme-accent border-theme-accent/40",
     planned: "bg-blue-500/20 text-blue-400 border-blue-500/40",
-    completed: "bg-zinc-600/30 text-zinc-400 border-zinc-500/40",
+    completed: "bg-zinc-600/30 text-theme-text-muted border-zinc-500/40",
   };
   const labels: Record<string, string> = {
     active: "Active",
@@ -324,17 +324,17 @@ export default function MesocycleDetailPage() {
 
   if (loading || !mesocycle) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <div className="mb-6">
-          <Link href="/mesocycles" className="text-zinc-400 hover:text-white">
+          <Link href="/mesocycles" className="text-theme-text-muted hover:text-theme-text-primary">
             ← Mesocycles
           </Link>
         </div>
@@ -343,20 +343,20 @@ export default function MesocycleDetailPage() {
         <div
           className={`rounded-xl border p-6 ${
             mesocycle.status === "active"
-              ? "border-[#f97316]/60 shadow-[0_0_20px_-5px_rgba(249,115,22,0.2)]"
-              : "border-zinc-800"
-          } bg-zinc-900/50`}
+              ? "border-theme-accent/60 shadow-[0_0_20px_-5px_rgba(249,115,22,0.2)]"
+              : "border-theme-border"
+          } bg-theme-surface/50`}
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">{mesocycle.name}</h1>
+              <h1 className="text-2xl font-bold text-theme-text-primary">{mesocycle.name}</h1>
               <div className="mt-2 flex items-center gap-2">
                 <StatusBadge status={mesocycle.status ?? "planned"} />
               </div>
               {mesocycle.description && (
-                <p className="mt-2 text-zinc-400">{mesocycle.description}</p>
+                <p className="mt-2 text-theme-text-muted">{mesocycle.description}</p>
               )}
-              <p className="mt-2 text-sm text-zinc-500">
+              <p className="mt-2 text-sm text-theme-text-muted">
                 {formatDate(mesocycle.start_date)} – {formatDate(mesocycle.end_date)}
               </p>
             </div>
@@ -365,7 +365,7 @@ export default function MesocycleDetailPage() {
                 <button
                   type="button"
                   onClick={() => setActivateModalOpen(true)}
-                  className="rounded-lg bg-[#f97316]/20 px-3 py-1.5 text-sm font-medium text-[#f97316] hover:bg-[#f97316]/30"
+                  className="rounded-lg bg-theme-accent/20 px-3 py-1.5 text-sm font-medium text-theme-accent hover:bg-theme-accent/30"
                 >
                   Activate
                 </button>
@@ -374,20 +374,20 @@ export default function MesocycleDetailPage() {
                 <button
                   type="button"
                   onClick={() => setCompleteModalOpen(true)}
-                  className="rounded-lg bg-zinc-600/30 px-3 py-1.5 text-sm font-medium text-zinc-300 hover:bg-zinc-600/50"
+                  className="rounded-lg bg-zinc-600/30 px-3 py-1.5 text-sm font-medium text-theme-text-muted hover:bg-zinc-600/50"
                 >
                   Complete
                 </button>
               )}
               <Link
                 href={`/mesocycles/${id}/report`}
-                className="rounded-lg bg-[#f97316] px-3 py-1.5 text-sm font-semibold text-[#0a0a0a] shadow transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+                className="rounded-lg bg-theme-accent px-3 py-1.5 text-sm font-semibold text-theme-on-accent shadow transition hover:bg-theme-accent-hover focus:outline-none focus:ring-2 focus:ring-theme-accent focus:ring-offset-2 focus:ring-offset-theme-bg"
               >
                 View Full Report
               </Link>
               <Link
                 href={`/mesocycles/${id}/edit`}
-                className="rounded-lg border border-zinc-600 px-3 py-1.5 text-sm font-medium text-zinc-300 hover:bg-zinc-800"
+                className="rounded-lg border border-theme-border/80 px-3 py-1.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border/90"
               >
                 Edit
               </Link>
@@ -405,25 +405,25 @@ export default function MesocycleDetailPage() {
         {/* Workout Templates */}
         <section className="mt-10">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-white">Workout Templates</h2>
+            <h2 className="text-lg font-semibold text-theme-text-primary">Workout Templates</h2>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setAddTemplateOpen(true)}
-                className="rounded-lg bg-[#f97316]/20 px-3 py-1.5 text-sm font-medium text-[#f97316] hover:bg-[#f97316]/30"
+                className="rounded-lg bg-theme-accent/20 px-3 py-1.5 text-sm font-medium text-theme-accent hover:bg-theme-accent/30"
               >
                 Add Template
               </button>
               <Link
                 href={`/workouts/templates/new?mesocycle_id=${id}`}
-                className="rounded-lg border border-zinc-600 px-3 py-1.5 text-sm font-medium text-zinc-300 hover:bg-zinc-800"
+                className="rounded-lg border border-theme-border/80 px-3 py-1.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border/90"
               >
                 Create New Template
               </Link>
             </div>
           </div>
           {templates.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-zinc-700 py-6 text-center text-zinc-500">
+            <p className="rounded-xl border border-dashed border-theme-border py-6 text-center text-theme-text-muted">
               No templates assigned. Add an existing template or create a new one.
             </p>
           ) : (
@@ -431,25 +431,25 @@ export default function MesocycleDetailPage() {
               {templates.map((t) => (
                 <li
                   key={t.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-theme-border bg-theme-surface/50 px-4 py-3"
                 >
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/workouts/templates/${t.id}/edit`}
-                      className="font-medium text-white hover:text-[#f97316]"
+                      className="font-medium text-theme-text-primary hover:text-theme-accent"
                     >
                       {t.name}
                     </Link>
                     {t.day_of_week != null && (
-                      <span className="text-xs text-zinc-500">{DAYS[t.day_of_week]}</span>
+                      <span className="text-xs text-theme-text-muted">{DAYS[t.day_of_week]}</span>
                     )}
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-theme-text-muted">
                       {t.exercise_count} exercise{t.exercise_count !== 1 ? "s" : ""}
                     </span>
                   </div>
                   <Link
                     href={`/workouts/templates/${t.id}/edit`}
-                    className="text-sm text-zinc-400 hover:text-[#f97316]"
+                    className="text-sm text-theme-text-muted hover:text-theme-accent"
                   >
                     Edit
                   </Link>
@@ -461,34 +461,34 @@ export default function MesocycleDetailPage() {
 
         {/* Workout Log summary + list */}
         <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-white">Workout Log</h2>
+          <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">Workout Log</h2>
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <p className="text-2xl font-bold text-white">{totalWorkouts}</p>
-              <p className="text-sm text-zinc-500">Workouts completed</p>
+            <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4">
+              <p className="text-2xl font-bold text-theme-text-primary">{totalWorkouts}</p>
+              <p className="text-sm text-theme-text-muted">Workouts completed</p>
             </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <p className="text-2xl font-bold text-white">
+            <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4">
+              <p className="text-2xl font-bold text-theme-text-primary">
                 {kgToLbs(totalVolume)?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ??
                   "0"}{" "}
-                <span className="text-sm font-normal text-zinc-500">lbs</span>
+                <span className="text-sm font-normal text-theme-text-muted">lbs</span>
               </p>
-              <p className="text-sm text-zinc-500">Total volume</p>
+              <p className="text-sm text-theme-text-muted">Total volume</p>
             </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-              <p className="text-2xl font-bold text-white">{formatDuration(totalSeconds)}</p>
-              <p className="text-sm text-zinc-500">Total time trained</p>
+            <div className="rounded-xl border border-theme-border bg-theme-surface/50 p-4">
+              <p className="text-2xl font-bold text-theme-text-primary">{formatDuration(totalSeconds)}</p>
+              <p className="text-sm text-theme-text-muted">Total time trained</p>
             </div>
           </div>
           {logs.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-zinc-700 py-6 text-center text-zinc-500">
+            <p className="rounded-xl border border-dashed border-theme-border py-6 text-center text-theme-text-muted">
               No workouts logged for this mesocycle yet.
             </p>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-zinc-800">
+            <div className="overflow-hidden rounded-xl border border-theme-border">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800 bg-zinc-900/50 text-left text-zinc-500">
+                  <tr className="border-b border-theme-border bg-theme-surface/50 text-left text-theme-text-muted">
                     <th className="px-4 py-3">Workout</th>
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Duration</th>
@@ -500,28 +500,28 @@ export default function MesocycleDetailPage() {
                   {logs.map((log) => (
                     <tr
                       key={log.id}
-                      className="border-b border-zinc-800/80 transition hover:bg-zinc-800/30"
+                      className="border-b border-theme-border/80 transition hover:bg-theme-border/90/30"
                     >
                       <td className="px-4 py-3">
                         <Link
                           href={`/workouts/history/${log.id}`}
-                          className="font-medium text-white hover:text-[#f97316]"
+                          className="font-medium text-theme-text-primary hover:text-theme-accent"
                         >
                           {log.name}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-theme-text-muted">
                         {formatDate(log.completed_at)}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-theme-text-muted">
                         {formatDuration(log.duration_seconds)}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">
+                      <td className="px-4 py-3 text-theme-text-muted">
                         {kgToLbs(log.total_volume)?.toLocaleString(undefined, {
                           maximumFractionDigits: 1,
                         }) ?? "—"}
                       </td>
-                      <td className="px-4 py-3 text-zinc-400">{log.exercise_count}</td>
+                      <td className="px-4 py-3 text-theme-text-muted">{log.exercise_count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -533,16 +533,16 @@ export default function MesocycleDetailPage() {
         {/* Progress snapshot: top 5 exercises by volume, mini trend */}
         {topExercisesVolume.length > 0 && (
           <section className="mt-10">
-            <h2 className="mb-4 text-lg font-semibold text-white">Top exercises by volume</h2>
+            <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">Top exercises by volume</h2>
             <div className="space-y-3">
               {topExercisesVolume.map(({ exercise_id, name, volume, trend }) => (
                 <div
                   key={exercise_id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-theme-border bg-theme-surface/50 px-4 py-3"
                 >
-                  <span className="font-medium text-white">{name}</span>
+                  <span className="font-medium text-theme-text-primary">{name}</span>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-zinc-400">
+                    <span className="text-sm text-theme-text-muted">
                       {kgToLbs(volume)?.toLocaleString(undefined, {
                         maximumFractionDigits: 0,
                       }) ?? 0}{" "}
@@ -554,7 +554,7 @@ export default function MesocycleDetailPage() {
                           ? "bg-emerald-500/20 text-emerald-400"
                           : trend === "down"
                             ? "bg-red-500/20 text-red-400"
-                            : "bg-zinc-600/30 text-zinc-400"
+                            : "bg-zinc-600/30 text-theme-text-muted"
                       }`}
                       title={trend === "up" ? "Volume trending up" : trend === "down" ? "Volume trending down" : "Stable"}
                     >
@@ -564,7 +564,7 @@ export default function MesocycleDetailPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-zinc-500">
+            <p className="mt-2 text-xs text-theme-text-muted">
               Week-over-week volume trend (first vs second half of mesocycle). Full charts in Phase 8.
             </p>
           </section>
@@ -580,9 +580,9 @@ export default function MesocycleDetailPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-[#0a0a0a] p-6 shadow-xl">
-              <h2 className="text-lg font-bold text-white">Delete mesocycle?</h2>
-              <p className="mt-2 text-sm text-zinc-400">
+            <div className="w-full max-w-sm rounded-xl border border-theme-border bg-theme-bg p-6 shadow-xl">
+              <h2 className="text-lg font-bold text-theme-text-primary">Delete mesocycle?</h2>
+              <p className="mt-2 text-sm text-theme-text-muted">
                 &quot;{mesocycle.name}&quot; will be permanently deleted. Templates will be
                 unlinked. This cannot be undone.
               </p>
@@ -591,7 +591,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={() => !deleting && setDeleteModalOpen(false)}
                   disabled={deleting}
-                  className="flex-1 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-theme-border/80 bg-theme-border/90 py-2.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -599,7 +599,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-theme-text-primary hover:bg-red-700 disabled:opacity-50"
                 >
                   {deleting ? "Deleting…" : "Delete"}
                 </button>
@@ -618,9 +618,9 @@ export default function MesocycleDetailPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-[#0a0a0a] p-6 shadow-xl">
-              <h2 className="text-lg font-bold text-white">Activate this mesocycle?</h2>
-              <p className="mt-2 text-sm text-zinc-400">
+            <div className="w-full max-w-sm rounded-xl border border-theme-border bg-theme-bg p-6 shadow-xl">
+              <h2 className="text-lg font-bold text-theme-text-primary">Activate this mesocycle?</h2>
+              <p className="mt-2 text-sm text-theme-text-muted">
                 &quot;{mesocycle.name}&quot; will be set to active. Any other active mesocycle will
                 be set to planned.
               </p>
@@ -629,7 +629,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={() => !activating && setActivateModalOpen(false)}
                   disabled={activating}
-                  className="flex-1 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-theme-border/80 bg-theme-border/90 py-2.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -637,7 +637,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={handleActivate}
                   disabled={activating}
-                  className="flex-1 rounded-xl bg-[#f97316] py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c] disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-theme-accent py-2.5 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover disabled:opacity-50"
                 >
                   {activating ? "Activating…" : "Activate"}
                 </button>
@@ -656,9 +656,9 @@ export default function MesocycleDetailPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-sm rounded-xl border border-zinc-800 bg-[#0a0a0a] p-6 shadow-xl">
-              <h2 className="text-lg font-bold text-white">Complete this mesocycle?</h2>
-              <p className="mt-2 text-sm text-zinc-400">
+            <div className="w-full max-w-sm rounded-xl border border-theme-border bg-theme-bg p-6 shadow-xl">
+              <h2 className="text-lg font-bold text-theme-text-primary">Complete this mesocycle?</h2>
+              <p className="mt-2 text-sm text-theme-text-muted">
                 &quot;{mesocycle.name}&quot; will be marked completed.
                 {!mesocycle.end_date && " End date will be set to today."}
               </p>
@@ -667,7 +667,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={() => !completing && setCompleteModalOpen(false)}
                   disabled={completing}
-                  className="flex-1 rounded-xl border border-zinc-600 bg-zinc-800 py-2.5 text-sm font-medium text-zinc-300 hover:bg-zinc-700 disabled:opacity-50"
+                  className="flex-1 rounded-xl border border-theme-border/80 bg-theme-border/90 py-2.5 text-sm font-medium text-theme-text-muted hover:bg-theme-border disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -675,7 +675,7 @@ export default function MesocycleDetailPage() {
                   type="button"
                   onClick={handleComplete}
                   disabled={completing}
-                  className="flex-1 rounded-xl bg-[#f97316] py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c] disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-theme-accent py-2.5 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover disabled:opacity-50"
                 >
                   {completing ? "Completing…" : "Complete"}
                 </button>
@@ -694,10 +694,10 @@ export default function MesocycleDetailPage() {
             aria-hidden
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-xl border border-zinc-800 bg-[#0a0a0a] p-6 shadow-xl">
-              <h2 className="mb-4 text-lg font-bold text-white">Add template to this mesocycle</h2>
+            <div className="max-h-[80vh] w-full max-w-md overflow-y-auto rounded-xl border border-theme-border bg-theme-bg p-6 shadow-xl">
+              <h2 className="mb-4 text-lg font-bold text-theme-text-primary">Add template to this mesocycle</h2>
               {templatesToShow.length === 0 ? (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-theme-text-muted">
                   All your templates are already assigned to this mesocycle, or you have no
                   templates. Create a new one instead.
                 </p>
@@ -709,7 +709,7 @@ export default function MesocycleDetailPage() {
                         type="button"
                         onClick={() => assignTemplate(t.id)}
                         disabled={assigningTemplateId === t.id}
-                        className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2.5 text-left text-white hover:bg-zinc-800 disabled:opacity-50"
+                        className="w-full rounded-lg border border-theme-border bg-theme-surface/50 px-4 py-2.5 text-left text-theme-text-primary hover:bg-theme-border/90 disabled:opacity-50"
                       >
                         {t.name}
                         {assigningTemplateId === t.id ? " …" : ""}
@@ -721,7 +721,7 @@ export default function MesocycleDetailPage() {
               <button
                 type="button"
                 onClick={() => setAddTemplateOpen(false)}
-                className="mt-4 w-full rounded-lg border border-zinc-600 py-2.5 text-sm text-zinc-400 hover:bg-zinc-800"
+                className="mt-4 w-full rounded-lg border border-theme-border/80 py-2.5 text-sm text-theme-text-muted hover:bg-theme-border/90"
               >
                 Cancel
               </button>

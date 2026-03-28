@@ -129,30 +129,30 @@ export default function WorkoutComparePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <div className="mb-6">
-          <Link href="/workouts/history" className="text-zinc-400 hover:text-white">
+          <Link href="/workouts/history" className="text-theme-text-muted hover:text-theme-text-primary">
             ← History
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">Compare Workouts</h1>
-        <p className="mt-2 text-zinc-400">Select two completed workouts to compare side by side.</p>
+        <h1 className="text-2xl font-bold text-theme-text-primary">Compare Workouts</h1>
+        <p className="mt-2 text-theme-text-muted">Select two completed workouts to compare side by side.</p>
 
         <div className="mt-6 flex flex-wrap gap-4">
           <div className="min-w-[200px]">
-            <label className="mb-1 block text-sm text-zinc-500">Workout 1</label>
+            <label className="mb-1 block text-sm text-theme-text-muted">Workout 1</label>
             <select
               value={log1Id}
               onChange={(e) => setLog1Id(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             >
               <option value="">Select…</option>
               {logs.map((l) => (
@@ -163,11 +163,11 @@ export default function WorkoutComparePage() {
             </select>
           </div>
           <div className="min-w-[200px]">
-            <label className="mb-1 block text-sm text-zinc-500">Workout 2</label>
+            <label className="mb-1 block text-sm text-theme-text-muted">Workout 2</label>
             <select
               value={log2Id}
               onChange={(e) => setLog2Id(e.target.value)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             >
               <option value="">Select…</option>
               {logs.map((l) => (
@@ -181,10 +181,10 @@ export default function WorkoutComparePage() {
 
         {log1Id && log2Id && (
           <>
-            <div className="mt-8 overflow-hidden rounded-xl border border-zinc-800">
+            <div className="mt-8 overflow-hidden rounded-xl border border-theme-border">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800 bg-zinc-900/50 text-left text-zinc-500">
+                  <tr className="border-b border-theme-border bg-theme-surface/50 text-left text-theme-text-muted">
                     <th className="px-4 py-3">Exercise</th>
                     <th className="px-4 py-3">{log1?.name ?? "Workout 1"}</th>
                     <th className="px-4 py-3">{log2?.name ?? "Workout 2"}</th>
@@ -195,13 +195,13 @@ export default function WorkoutComparePage() {
                   {comparison.map((row) => (
                     <tr
                       key={row.exercise_id}
-                      className={`border-b border-zinc-800/80 ${
+                      className={`border-b border-theme-border/80 ${
                         row.diff === "up" ? "bg-emerald-500/5" : row.diff === "down" ? "bg-red-500/5" : row.diff === "new" ? "bg-blue-500/5" : ""
                       }`}
                     >
-                      <td className="px-4 py-3 font-medium text-white">{row.exerciseName}</td>
-                      <td className="px-4 py-3 text-zinc-400">{row.w1Sets}</td>
-                      <td className="px-4 py-3 text-zinc-400">{row.w2Sets}</td>
+                      <td className="px-4 py-3 font-medium text-theme-text-primary">{row.exerciseName}</td>
+                      <td className="px-4 py-3 text-theme-text-muted">{row.w1Sets}</td>
+                      <td className="px-4 py-3 text-theme-text-muted">{row.w2Sets}</td>
                       <td className="px-4 py-3">
                         {row.diff === "new" && <span className="text-blue-400">New in workout 2</span>}
                         {row.diff === "up" && (
@@ -214,28 +214,28 @@ export default function WorkoutComparePage() {
                             {(row.vol2Lbs - row.vol1Lbs).toFixed(1)} lbs volume
                           </span>
                         )}
-                        {row.diff === "same" && row.w1Sets !== "—" && <span className="text-zinc-500">—</span>}
+                        {row.diff === "same" && row.w1Sets !== "—" && <span className="text-theme-text-muted">—</span>}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="mt-6 flex flex-wrap gap-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className="mt-6 flex flex-wrap gap-6 rounded-xl border border-theme-border bg-theme-surface/50 p-4">
               <div>
-                <p className="text-xs text-zinc-500">Workout 1 total volume</p>
-                <p className="text-xl font-bold text-white">
+                <p className="text-xs text-theme-text-muted">Workout 1 total volume</p>
+                <p className="text-xl font-bold text-theme-text-primary">
                   {kgToLbs(totalVol1)?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? 0} lbs
                 </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Workout 2 total volume</p>
-                <p className="text-xl font-bold text-white">
+                <p className="text-xs text-theme-text-muted">Workout 2 total volume</p>
+                <p className="text-xl font-bold text-theme-text-primary">
                   {kgToLbs(totalVol2)?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? 0} lbs
                 </p>
               </div>
               <div>
-                <p className="text-xs text-zinc-500">Difference</p>
+                <p className="text-xs text-theme-text-muted">Difference</p>
                 <p className={`text-xl font-bold ${totalVol2 >= totalVol1 ? "text-emerald-400" : "text-red-400"}`}>
                   {totalVol2 >= totalVol1 ? "+" : ""}
                   {(kgToLbs(totalVol2) ?? 0) - (kgToLbs(totalVol1) ?? 0)} lbs
@@ -246,9 +246,9 @@ export default function WorkoutComparePage() {
         )}
 
         {logs.length === 0 && (
-          <p className="mt-8 rounded-xl border border-dashed border-zinc-700 py-8 text-center text-zinc-500">
+          <p className="mt-8 rounded-xl border border-dashed border-theme-border py-8 text-center text-theme-text-muted">
             No completed workouts yet.{" "}
-            <Link href="/workouts/log" className="text-[#f97316] hover:underline">
+            <Link href="/workouts/log" className="text-theme-accent hover:underline">
               Log a workout
             </Link>
           </p>

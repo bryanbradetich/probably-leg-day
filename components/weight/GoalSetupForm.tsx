@@ -325,20 +325,20 @@ export function GoalSetupForm({
   };
 
   const inputClass =
-    "mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-white outline-none transition-colors focus:border-[#f97316]/80";
+    "mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-theme-text-primary outline-none transition-colors focus:border-theme-accent/80";
   const inputErrorClass = "border-red-500/60 focus:border-red-500";
 
   return (
-    <div className="font-sans rounded-xl border border-[#f97316]/50 bg-[#0a0a0a] p-6 shadow-lg shadow-black/20">
-      <h2 className="text-lg font-semibold text-white">Set your goal</h2>
-      <p className="mt-1 text-sm text-zinc-400">
+    <div className="font-sans rounded-xl border border-theme-accent/50 bg-theme-bg p-6 shadow-lg shadow-black/20">
+      <h2 className="text-lg font-semibold text-theme-text-primary">Set your goal</h2>
+      <p className="mt-1 text-sm text-theme-text-muted">
         Current weight, target date, and a linked goal weight / pounds to lose. Weekly rate updates from your
         timeline—you can override it anytime.
       </p>
 
       <div className="mt-5 space-y-5">
         <div>
-          <label className="block text-sm text-zinc-400">Current weight (lbs)</label>
+          <label className="block text-sm text-theme-text-muted">Current weight (lbs)</label>
           <input
             type="number"
             step="0.1"
@@ -349,14 +349,14 @@ export function GoalSetupForm({
           />
           {currentFieldError && <p className="mt-1 text-xs text-red-400">{currentFieldError}</p>}
           {basedOnDate && (
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-theme-text-muted">
               Based on your last logged weight on {formatShortDate(basedOnDate)}
             </p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm text-zinc-400">Target date</label>
+          <label className="block text-sm text-theme-text-muted">Target date</label>
           <input
             type="date"
             min={minTargetDate}
@@ -371,9 +371,9 @@ export function GoalSetupForm({
         </div>
 
         <div>
-          <span className="text-sm text-zinc-400">Goal weight & pounds to lose</span>
+          <span className="text-sm text-theme-text-muted">Goal weight & pounds to lose</span>
           <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
-            <label className="min-w-0 flex-1 text-xs text-zinc-500">
+            <label className="min-w-0 flex-1 text-xs text-theme-text-muted">
               Goal weight (lbs)
               <input
                 type="number"
@@ -385,12 +385,12 @@ export function GoalSetupForm({
               />
             </label>
             <div
-              className="flex shrink-0 items-center justify-center pb-2 text-lg font-semibold text-[#f97316] sm:pb-3"
+              className="flex shrink-0 items-center justify-center pb-2 text-lg font-semibold text-theme-accent sm:pb-3"
               aria-hidden
             >
               ⇄
             </div>
-            <label className="min-w-0 flex-1 text-xs text-zinc-500">
+            <label className="min-w-0 flex-1 text-xs text-theme-text-muted">
               Lbs to lose
               <input
                 type="number"
@@ -406,7 +406,7 @@ export function GoalSetupForm({
         </div>
 
         <div>
-          <span className="text-sm text-zinc-400">Weekly loss method</span>
+          <span className="text-sm text-theme-text-muted">Weekly loss method</span>
           <div className="mt-2 flex flex-wrap gap-2">
             <button
               type="button"
@@ -416,8 +416,8 @@ export function GoalSetupForm({
               }}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 lossType === "percentage"
-                  ? "bg-[#f97316] text-[#0a0a0a]"
-                  : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-600"
+                  ? "bg-theme-accent text-theme-on-accent"
+                  : "border border-theme-border bg-theme-surface text-theme-text-muted hover:border-theme-border/80"
               }`}
             >
               % per week
@@ -430,14 +430,14 @@ export function GoalSetupForm({
               }}
               className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                 lossType === "fixed"
-                  ? "bg-[#f97316] text-[#0a0a0a]"
-                  : "border border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-600"
+                  ? "bg-theme-accent text-theme-on-accent"
+                  : "border border-theme-border bg-theme-surface text-theme-text-muted hover:border-theme-border/80"
               }`}
             >
               lbs per week
             </button>
           </div>
-          <label className="mt-3 block text-sm text-zinc-400">
+          <label className="mt-3 block text-sm text-theme-text-muted">
             {lossType === "percentage" ? "Percent per week" : "Pounds per week"}
             <input
               type="number"
@@ -458,22 +458,22 @@ export function GoalSetupForm({
               className={inputClass}
             />
           </label>
-          {lossHelper && <p className="mt-1 text-xs text-zinc-500">{lossHelper}</p>}
+          {lossHelper && <p className="mt-1 text-xs text-theme-text-muted">{lossHelper}</p>}
         </div>
       </div>
 
       {summaryLine && (
-        <div className="mt-6 rounded-xl border-2 border-[#f97316]/70 bg-[#f97316]/[0.07] px-4 py-4">
-          <p className="text-sm font-medium leading-relaxed text-zinc-100">{summaryLine}</p>
+        <div className="mt-6 rounded-xl border-2 border-theme-accent/70 bg-theme-accent/[0.07] px-4 py-4">
+          <p className="text-sm font-medium leading-relaxed text-theme-text-primary">{summaryLine}</p>
           {previewWeeks.length > 0 && (
-            <div className="mt-3 border-t border-[#f97316]/25 pt-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#f97316]/90">
+            <div className="mt-3 border-t border-theme-accent/25 pt-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-theme-accent/90">
                 First 4 weeks (preview)
               </p>
-              <ul className="mt-2 grid gap-1 text-sm tabular-nums text-zinc-300 sm:grid-cols-2">
+              <ul className="mt-2 grid gap-1 text-sm tabular-nums text-theme-text-muted sm:grid-cols-2">
                 {previewWeeks.map((lb, i) => (
                   <li key={i}>
-                    Week {i + 1}: <span className="font-medium text-white">{lb.toFixed(1)}</span> lbs
+                    Week {i + 1}: <span className="font-medium text-theme-text-primary">{lb.toFixed(1)}</span> lbs
                   </li>
                 ))}
               </ul>
@@ -496,7 +496,7 @@ export function GoalSetupForm({
             !goalDate.trim() ||
             !Number.isFinite(lossNum)
           }
-          className="rounded-lg bg-[#f97316] px-5 py-2.5 text-sm font-semibold text-[#0a0a0a] transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg bg-theme-accent px-5 py-2.5 text-sm font-semibold text-theme-on-accent transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
         >
           {saving ? "Saving…" : "Save goal"}
         </button>
@@ -504,7 +504,7 @@ export function GoalSetupForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-zinc-600 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-900"
+            className="rounded-lg border border-theme-border/80 px-4 py-2 text-sm text-theme-text-muted hover:bg-theme-surface"
           >
             Cancel
           </button>

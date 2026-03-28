@@ -89,13 +89,13 @@ export default function NewMesocyclePage() {
   if (userId === null) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
         <div className="mb-6 flex items-center gap-4">
-          <Link href="/mesocycles" className="text-zinc-400 hover:text-white">
+          <Link href="/mesocycles" className="text-theme-text-muted hover:text-theme-text-primary">
             ← Mesocycles
           </Link>
-          <h1 className="text-2xl font-bold text-white">New Mesocycle</h1>
+          <h1 className="text-2xl font-bold text-theme-text-primary">New Mesocycle</h1>
         </div>
 
         <div className="space-y-6">
@@ -105,51 +105,51 @@ export default function NewMesocyclePage() {
             </div>
           )}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">Name *</label>
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">Name *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Hypertrophy Block 1"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">Description</label>
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               placeholder="Optional"
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-300">Start date</label>
+              <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">Start date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-300">End date</label>
+              <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">End date</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+                className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
               />
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-zinc-300">Status</label>
+            <label className="mb-1.5 block text-sm font-medium text-theme-text-muted">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as StatusOption)}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+              className="w-full rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
             >
               {STATUS_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -161,7 +161,7 @@ export default function NewMesocyclePage() {
           <div className="flex gap-3">
             <Link
               href="/mesocycles"
-              className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 py-2.5 text-center text-sm font-medium text-zinc-300 hover:bg-zinc-700"
+              className="flex-1 rounded-lg border border-theme-border/80 bg-theme-border/90 py-2.5 text-center text-sm font-medium text-theme-text-muted hover:bg-theme-border"
             >
               Cancel
             </Link>
@@ -169,7 +169,7 @@ export default function NewMesocyclePage() {
               type="button"
               onClick={handleSave}
               disabled={saving || !name.trim()}
-              className="flex-1 rounded-lg bg-[#f97316] py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c] disabled:opacity-50"
+              className="flex-1 rounded-lg bg-theme-accent py-2.5 text-sm font-semibold text-theme-on-accent hover:bg-theme-accent-hover disabled:opacity-50"
             >
               {saving ? "Saving…" : "Create mesocycle"}
             </button>

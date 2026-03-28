@@ -22,17 +22,22 @@ const navLinks: { href?: string; label: string; subLinks?: { href: string; label
     subLinks: [
       { href: "/progress/records", label: "Records" },
       { href: "/progress/measurements", label: "Measurements" },
-      { href: "/weight", label: "Weight" },
     ],
   },
   {
-    label: "Food",
+    label: "Health",
     subLinks: [
       { href: "/food", label: "Today's Log" },
       { href: "/food/library", label: "Food Library" },
       { href: "/food/templates", label: "Meal Templates" },
       { href: "/food/weekly", label: "Weekly Summary" },
+      { href: "/weight", label: "Weight" },
+      { href: "/calories", label: "Calories" },
     ],
+  },
+  {
+    label: "Settings",
+    subLinks: [{ href: "/settings/themes", label: "Themes" }],
   },
   { href: "/reports", label: "Reports" },
 ];
@@ -47,7 +52,8 @@ export function AppNav() {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [workoutsOpen, setWorkoutsOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
-  const [foodOpen, setFoodOpen] = useState(false);
+  const [healthOpen, setHealthOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const workoutsActive =
@@ -57,11 +63,17 @@ export function AppNav() {
     pathname === "/progress" ||
     pathname?.startsWith("/progress/exercise/") ||
     pathname?.startsWith("/progress/records") ||
-    pathname?.startsWith("/progress/measurements") ||
-    pathname === "/weight" ||
-    pathname?.startsWith("/weight/");
+    pathname?.startsWith("/progress/measurements");
 
-  const foodActive = pathname === "/food" || pathname?.startsWith("/food/");
+  const healthActive =
+    pathname === "/food" ||
+    pathname?.startsWith("/food/") ||
+    pathname === "/weight" ||
+    pathname?.startsWith("/weight/") ||
+    pathname === "/calories" ||
+    pathname?.startsWith("/calories/");
+
+  const settingsActive = pathname?.startsWith("/settings");
 
   useEffect(() => {
     const supabase = createClient();
@@ -78,7 +90,8 @@ export function AppNav() {
     setMobileOpen(false);
     setWorkoutsOpen(false);
     setProgressOpen(false);
-    setFoodOpen(false);
+    setHealthOpen(false);
+    setSettingsOpen(false);
   }, [pathname]);
 
   const navContent = (
@@ -86,17 +99,36 @@ export function AppNav() {
       {navLinks.map((link) => {
         if (link.subLinks) {
           const isWorkouts = link.label === "Workouts";
-          const isFood = link.label === "Food";
-          const open = isWorkouts ? workoutsOpen : isFood ? foodOpen : progressOpen;
-          const setOpen = isWorkouts ? setWorkoutsOpen : isFood ? setFoodOpen : setProgressOpen;
-          const active = isWorkouts ? workoutsActive : isFood ? foodActive : progressActive;
+          const isHealth = link.label === "Health";
+          const isSettings = link.label === "Settings";
+          const open = isWorkouts
+            ? workoutsOpen
+            : isHealth
+              ? healthOpen
+              : isSettings
+                ? settingsOpen
+                : progressOpen;
+          const setOpen = isWorkouts
+            ? setWorkoutsOpen
+            : isHealth
+              ? setHealthOpen
+              : isSettings
+                ? setSettingsOpen
+                : setProgressOpen;
+          const active = isWorkouts
+            ? workoutsActive
+            : isHealth
+              ? healthActive
+              : isSettings
+                ? settingsActive
+                : progressActive;
           return (
             <div key={link.label} className="relative">
               <button
                 type="button"
                 onClick={() => setOpen((o) => !o)}
                 className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  active ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  active ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-border/40 hover:text-theme-text-primary"
                 }`}
               >
                 {link.label} ▾
@@ -104,7 +136,7 @@ export function AppNav() {
               {open && (
                 <>
                   <div className="fixed inset-0 z-10" aria-hidden onClick={() => setOpen(false)} />
-                  <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-zinc-800 bg-[#0a0a0a] py-1 shadow-xl">
+                  <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-theme-border bg-theme-bg py-1 shadow-xl">
                     {link.subLinks.map((sub) => {
                       const subActive = subLinkIsActive(pathname, sub.href);
                       return (
@@ -113,7 +145,7 @@ export function AppNav() {
                           href={sub.href}
                           onClick={() => setOpen(false)}
                           className={`block px-4 py-2 text-sm ${
-                            subActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                            subActive ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-border/40 hover:text-theme-text-primary"
                           }`}
                         >
                           {sub.label}
@@ -133,7 +165,7 @@ export function AppNav() {
             key={href}
             href={href}
             className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-              isActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+              isActive ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-border/40 hover:text-theme-text-primary"
             }`}
           >
             {link.label}
@@ -145,7 +177,7 @@ export function AppNav() {
       ) : (
         <Link
           href="/auth/login"
-          className="rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-700 hover:text-white"
+          className="rounded-lg border border-theme-border bg-theme-surface/50 px-4 py-2 text-sm font-medium text-theme-text-muted transition hover:bg-theme-border hover:text-theme-text-primary"
         >
           Sign in
         </Link>
@@ -154,11 +186,11 @@ export function AppNav() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-[#0a0a0a]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0a0a0a]/80">
+    <nav className="sticky top-0 z-50 border-b border-theme-border bg-theme-bg/95 backdrop-blur supports-[backdrop-filter]:bg-theme-bg/80">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link
           href="/"
-          className="text-lg font-semibold text-white transition hover:text-zinc-300"
+          className="text-lg font-semibold text-theme-text-primary transition hover:text-theme-text-muted"
         >
           Probably Leg Day
         </Link>
@@ -176,7 +208,7 @@ export function AppNav() {
           {!user && (
             <Link
               href="/auth/login"
-              className="rounded-lg border border-zinc-700 bg-zinc-800/50 px-3 py-1.5 text-sm font-medium text-zinc-300"
+              className="rounded-lg border border-theme-border bg-theme-surface/50 px-3 py-1.5 text-sm font-medium text-theme-text-muted"
             >
               Sign in
             </Link>
@@ -184,7 +216,7 @@ export function AppNav() {
           <button
             type="button"
             onClick={() => setMobileOpen((o) => !o)}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            className="rounded-lg p-2 text-theme-text-muted hover:bg-theme-border/90 hover:text-theme-text-primary"
             aria-expanded={mobileOpen}
             aria-label="Toggle menu"
           >
@@ -209,13 +241,13 @@ export function AppNav() {
             aria-hidden
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 right-0 top-14 z-50 border-b border-zinc-800 bg-[#0a0a0a] py-4 shadow-xl md:hidden">
+          <div className="absolute left-0 right-0 top-14 z-50 border-b border-theme-border bg-theme-bg py-4 shadow-xl md:hidden">
             <div className="flex flex-col gap-1 px-4">
               {navLinks.map((link) => {
                 if (link.subLinks) {
                   return (
                     <div key={link.label} className="flex flex-col">
-                      <span className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      <span className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-theme-text-muted">
                         {link.label}
                       </span>
                       {link.subLinks.map((sub) => {
@@ -225,7 +257,7 @@ export function AppNav() {
                             key={sub.href}
                             href={sub.href}
                             className={`rounded-lg px-3 py-2.5 text-sm ${
-                              isActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50"
+                              isActive ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-border/40"
                             }`}
                           >
                             {sub.label}
@@ -242,7 +274,7 @@ export function AppNav() {
                     key={href}
                     href={href}
                     className={`rounded-lg px-3 py-2.5 text-sm ${
-                      isActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50"
+                      isActive ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-border/40"
                     }`}
                   >
                     {link.label}

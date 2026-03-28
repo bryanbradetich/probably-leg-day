@@ -83,14 +83,14 @@ export function ExercisePicker({
           placeholder="Search by name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+          className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
         />
         <select
           value={equipmentFilter}
           onChange={(e) =>
             setEquipmentFilter((e.target.value || "") as "" | EquipmentType)
           }
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+          className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
         >
           {EQUIPMENT_OPTIONS.map((o) => (
             <option key={o.value || "all"} value={o.value}>
@@ -101,7 +101,7 @@ export function ExercisePicker({
         <select
           value={muscleGroupFilter}
           onChange={(e) => setMuscleGroupFilter(e.target.value)}
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+          className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
         >
           {MUSCLE_GROUP_OPTIONS.map((o) => (
             <option key={o.value || "all"} value={o.value}>
@@ -114,7 +114,7 @@ export function ExercisePicker({
           onChange={(e) =>
             setTypeFilter((e.target.value || "") as "" | ExerciseType)
           }
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-[#f97316] focus:outline-none focus:ring-1 focus:ring-[#f97316]"
+          className="rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-sm text-theme-text-primary focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
         >
           {TYPE_OPTIONS.map((o) => (
             <option key={o.value || "all"} value={o.value}>
@@ -123,12 +123,12 @@ export function ExercisePicker({
           ))}
         </select>
       </div>
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-theme-text-muted">
         {filtered.length} exercise{filtered.length !== 1 ? "s" : ""} — click to add
       </p>
-      <ul className="max-h-64 overflow-y-auto rounded-lg border border-zinc-800 bg-zinc-900/50">
+      <ul className="max-h-64 overflow-y-auto rounded-lg border border-theme-border bg-theme-surface/50">
         {filtered.length === 0 ? (
-          <li className="px-4 py-6 text-center text-zinc-500">
+          <li className="px-4 py-6 text-center text-theme-text-muted">
             No exercises match. Try different filters.
           </li>
         ) : (
@@ -137,10 +137,10 @@ export function ExercisePicker({
               <button
                 type="button"
                 onClick={() => onSelect(ex)}
-                className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm hover:bg-zinc-800/80"
+                className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm hover:bg-theme-border/90/80"
               >
-                <span className="font-medium text-white">{ex.name}</span>
-                <span className="text-zinc-500">
+                <span className="font-medium text-theme-text-primary">{ex.name}</span>
+                <span className="text-theme-text-muted">
                   {ex.equipment ? formatEquipment(ex.equipment) : "—"} ·{" "}
                   {ex.type === "reps_sets" ? "Reps/sets" : "Timed"}
                 </span>
@@ -153,7 +153,7 @@ export function ExercisePicker({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
+          className="rounded-lg border border-theme-border/80 bg-theme-border/90 px-4 py-2 text-sm text-theme-text-muted hover:bg-theme-border"
         >
           Close
         </button>

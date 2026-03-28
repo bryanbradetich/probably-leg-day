@@ -111,35 +111,35 @@ export function LogFoodModal({
       <div className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm" aria-hidden onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
         <div
-          className="flex max-h-[90vh] w-full flex-col rounded-t-2xl border border-zinc-800 bg-[#0a0a0a] shadow-xl sm:max-h-[85vh] sm:max-w-md sm:rounded-2xl"
+          className="flex max-h-[90vh] w-full flex-col rounded-t-2xl border border-theme-border bg-theme-bg shadow-xl sm:max-h-[85vh] sm:max-w-md sm:rounded-2xl"
           role="dialog"
           aria-modal
         >
-          <div className="border-b border-zinc-800 px-5 py-4">
-            <h2 className="text-lg font-bold text-white">
+          <div className="border-b border-theme-border px-5 py-4">
+            <h2 className="text-lg font-bold text-theme-text-primary">
               {existingLog ? "Edit logged food" : "Add to log"}
             </h2>
-            <p className="mt-1 text-sm font-semibold text-zinc-300">{activeFood.name}</p>
+            <p className="mt-1 text-sm font-semibold text-theme-text-muted">{activeFood.name}</p>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 space-y-4">
             {err && (
               <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{err}</p>
             )}
-            <label className="block text-sm font-medium text-zinc-400">
+            <label className="block text-sm font-medium text-theme-text-muted">
               Date
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm font-bold text-white"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-sm font-bold text-theme-text-primary"
               />
             </label>
-            <label className="block text-sm font-medium text-zinc-400">
+            <label className="block text-sm font-medium text-theme-text-muted">
               Meal
               <select
                 value={mealSlot}
                 onChange={(e) => setMealSlot(Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm font-bold text-white"
+                className="mt-1 w-full rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-sm font-bold text-theme-text-primary"
               >
                 {MEAL_SLOTS.map((s) => (
                   <option key={s} value={s}>
@@ -149,7 +149,7 @@ export function LogFoodModal({
               </select>
             </label>
             <div>
-              <span className="text-sm font-medium text-zinc-400">Quantity</span>
+              <span className="text-sm font-medium text-theme-text-muted">Quantity</span>
               <div className="mt-2 flex gap-2">
                 <input
                   type="number"
@@ -157,16 +157,16 @@ export function LogFoodModal({
                   step="any"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="min-w-0 flex-1 rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-lg font-bold tabular-nums text-white"
+                  className="min-w-0 flex-1 rounded-lg border border-theme-border bg-theme-input-bg px-3 py-2 text-lg font-bold tabular-nums text-theme-text-primary"
                 />
-                <div className="flex rounded-lg border border-zinc-700 p-0.5">
+                <div className="flex rounded-lg border border-theme-border p-0.5">
                   {(["g", "oz"] as const).map((u) => (
                     <button
                       key={u}
                       type="button"
                       onClick={() => setUnit(u)}
                       className={`rounded-md px-3 py-2 text-sm font-bold ${
-                        unit === u ? "bg-[#f97316] text-[#0a0a0a]" : "text-zinc-400"
+                        unit === u ? "bg-theme-accent text-theme-on-accent" : "text-theme-text-muted"
                       }`}
                     >
                       {u}
@@ -176,26 +176,26 @@ export function LogFoodModal({
               </div>
             </div>
             {preview && (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/80 p-4">
-                <p className="text-xs font-semibold uppercase text-zinc-500">Totals for this amount</p>
+              <div className="rounded-xl border border-theme-border bg-theme-surface/80 p-4">
+                <p className="text-xs font-semibold uppercase text-theme-text-muted">Totals for this amount</p>
                 <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
-                  <dt className="text-zinc-500">Calories</dt>
-                  <dd className="font-bold tabular-nums text-white">{formatKcal(preview.calories)} kcal</dd>
-                  <dt className="text-zinc-500">Protein</dt>
-                  <dd className="font-bold tabular-nums text-[#3b82f6]">{formatGrams(preview.protein_g, 1)}g</dd>
-                  <dt className="text-zinc-500">Carbs</dt>
-                  <dd className="font-bold tabular-nums text-[#eab308]">{formatGrams(preview.carbs_g, 1)}g</dd>
-                  <dt className="text-zinc-500">Fat</dt>
-                  <dd className="font-bold tabular-nums text-[#f97316]">{formatGrams(preview.fat_g, 1)}g</dd>
+                  <dt className="text-theme-text-muted">Calories</dt>
+                  <dd className="font-bold tabular-nums text-theme-text-primary">{formatKcal(preview.calories)} kcal</dd>
+                  <dt className="text-theme-text-muted">Protein</dt>
+                  <dd className="font-bold tabular-nums text-theme-macro-protein">{formatGrams(preview.protein_g, 1)}g</dd>
+                  <dt className="text-theme-text-muted">Carbs</dt>
+                  <dd className="font-bold tabular-nums text-theme-macro-carbs">{formatGrams(preview.carbs_g, 1)}g</dd>
+                  <dt className="text-theme-text-muted">Fat</dt>
+                  <dd className="font-bold tabular-nums text-theme-accent">{formatGrams(preview.fat_g, 1)}g</dd>
                 </dl>
               </div>
             )}
           </div>
-          <div className="flex gap-3 border-t border-zinc-800 px-5 py-4">
+          <div className="flex gap-3 border-t border-theme-border px-5 py-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-zinc-600 py-3 text-sm font-semibold text-zinc-300"
+              className="flex-1 rounded-xl border border-theme-border/80 py-3 text-sm font-semibold text-theme-text-muted"
             >
               Cancel
             </button>
@@ -203,7 +203,7 @@ export function LogFoodModal({
               type="button"
               onClick={() => void save()}
               disabled={saving}
-              className="flex-1 rounded-xl bg-[#f97316] py-3 text-sm font-bold text-[#0a0a0a] disabled:opacity-50"
+              className="flex-1 rounded-xl bg-theme-accent py-3 text-sm font-bold text-theme-on-accent disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
             </button>

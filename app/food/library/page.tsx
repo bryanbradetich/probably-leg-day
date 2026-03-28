@@ -78,7 +78,7 @@ export default function FoodLibraryPage() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+      <div className="min-h-screen bg-theme-bg text-theme-text-primary">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
           <ErrorState message={error ?? "Session expired."} backHref="/auth/login" backLabel="Sign in" />
         </div>
@@ -87,16 +87,16 @@ export default function FoodLibraryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
         <PageHeader title="Food library" description="Search, create, and log foods." />
 
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
-          <Link href="/food" className="font-medium text-[#f97316] hover:underline">
+          <Link href="/food" className="font-medium text-theme-accent hover:underline">
             Today&apos;s log
           </Link>
-          <span className="text-zinc-600">·</span>
-          <Link href="/food/templates" className="font-medium text-[#f97316] hover:underline">
+          <span className="text-theme-text-muted/80">·</span>
+          <Link href="/food/templates" className="font-medium text-theme-accent hover:underline">
             Meal templates
           </Link>
         </div>
@@ -113,7 +113,7 @@ export default function FoodLibraryPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name or brand…"
-            className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-[#f97316] focus:outline-none"
+            className="w-full max-w-md rounded-xl border border-theme-border bg-theme-input-bg px-4 py-3 text-sm text-theme-text-primary placeholder:text-theme-text-muted/60 focus:border-theme-accent focus:outline-none"
           />
           <button
             type="button"
@@ -121,7 +121,7 @@ export default function FoodLibraryPage() {
               setEditFood(null);
               setSlideOpen(true);
             }}
-            className="shrink-0 rounded-xl bg-[#f97316] px-5 py-3 text-sm font-bold text-[#0a0a0a]"
+            className="shrink-0 rounded-xl bg-theme-accent px-5 py-3 text-sm font-bold text-theme-on-accent"
           >
             Add food
           </button>
@@ -140,7 +140,7 @@ export default function FoodLibraryPage() {
               type="button"
               onClick={() => setFilter(k)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold ${
-                filter === k ? "bg-zinc-800 text-white" : "text-zinc-500 hover:bg-zinc-900"
+                filter === k ? "bg-theme-border/90 text-theme-text-primary" : "text-theme-text-muted hover:bg-theme-surface"
               }`}
             >
               {label}
@@ -150,7 +150,7 @@ export default function FoodLibraryPage() {
 
         <ul className="mt-8 space-y-3">
           {filtered.length === 0 ? (
-            <li className="rounded-xl border border-dashed border-zinc-700 py-12 text-center text-sm text-zinc-500">
+            <li className="rounded-xl border border-dashed border-theme-border py-12 text-center text-sm text-theme-text-muted">
               No foods match your filters.
             </li>
           ) : (
@@ -159,30 +159,30 @@ export default function FoodLibraryPage() {
               return (
                 <li
                   key={f.id}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-4 sm:px-5"
+                  className="rounded-xl border border-theme-border bg-theme-surface/40 px-4 py-4 sm:px-5"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-lg font-bold text-white">{f.name}</p>
-                      {f.brand && <p className="text-sm text-zinc-500">{f.brand}</p>}
-                      <p className="mt-2 text-sm font-bold text-zinc-300">
+                      <p className="text-lg font-bold text-theme-text-primary">{f.name}</p>
+                      {f.brand && <p className="text-sm text-theme-text-muted">{f.brand}</p>}
+                      <p className="mt-2 text-sm font-bold text-theme-text-muted">
                         Serving:{" "}
-                        <span className="tabular-nums text-white">
+                        <span className="tabular-nums text-theme-text-primary">
                           {Number(f.serving_size)}
                           {f.serving_unit}
                         </span>
                       </p>
                       <p className="mt-1 text-sm font-bold">
-                        <span className="text-white">{formatKcal(Number(f.calories))} kcal</span>
-                        <span className="text-zinc-500"> · </span>
-                        <span className="text-[#3b82f6]">P {Number(f.protein_g).toFixed(1)}g</span>
-                        <span className="text-zinc-500"> · </span>
-                        <span className="text-[#eab308]">C {Number(f.carbs_g).toFixed(1)}g</span>
-                        <span className="text-zinc-500"> · </span>
-                        <span className="text-[#f97316]">F {Number(f.fat_g).toFixed(1)}g</span>
+                        <span className="text-theme-text-primary">{formatKcal(Number(f.calories))} kcal</span>
+                        <span className="text-theme-text-muted"> · </span>
+                        <span className="text-theme-macro-protein">P {Number(f.protein_g).toFixed(1)}g</span>
+                        <span className="text-theme-text-muted"> · </span>
+                        <span className="text-theme-macro-carbs">C {Number(f.carbs_g).toFixed(1)}g</span>
+                        <span className="text-theme-text-muted"> · </span>
+                        <span className="text-theme-accent">F {Number(f.fat_g).toFixed(1)}g</span>
                       </p>
                       {f.is_public && (
-                        <span className="mt-2 inline-block rounded bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
+                        <span className="mt-2 inline-block rounded bg-theme-border/90 px-2 py-0.5 text-xs font-medium text-theme-text-muted">
                           Public
                         </span>
                       )}
@@ -191,7 +191,7 @@ export default function FoodLibraryPage() {
                       <button
                         type="button"
                         onClick={() => setLogFood(f)}
-                        className="rounded-lg bg-[#f97316] px-3 py-2 text-sm font-bold text-[#0a0a0a]"
+                        className="rounded-lg bg-theme-accent px-3 py-2 text-sm font-bold text-theme-on-accent"
                       >
                         Add to today&apos;s log
                       </button>
@@ -203,7 +203,7 @@ export default function FoodLibraryPage() {
                               setEditFood(f);
                               setSlideOpen(true);
                             }}
-                            className="rounded-lg border border-zinc-600 px-3 py-2 text-sm font-semibold text-zinc-200"
+                            className="rounded-lg border border-theme-border/80 px-3 py-2 text-sm font-semibold text-theme-text-primary/90"
                           >
                             Edit
                           </button>

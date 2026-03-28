@@ -139,22 +139,22 @@ export default function ExerciseProgressPage() {
 
   if (loading || !exercise) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-zinc-500">
+      <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
+    <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         <div className="mb-6">
-          <Link href="/progress" className="text-zinc-400 hover:text-white">
+          <Link href="/progress" className="text-theme-text-muted hover:text-theme-text-primary">
             ← Progress
           </Link>
         </div>
-        <h1 className="text-2xl font-bold text-white">{exercise.name}</h1>
-        <p className="mt-2 text-zinc-400">Progress and set history.</p>
+        <h1 className="text-2xl font-bold text-theme-text-primary">{exercise.name}</h1>
+        <p className="mt-2 text-theme-text-muted">Progress and set history.</p>
 
         <div className="mt-8 space-y-8">
           <ChartCard
@@ -218,14 +218,14 @@ export default function ExerciseProgressPage() {
           </ChartCard>
 
           <section>
-            <h2 className="mb-4 text-lg font-semibold text-white">Set history</h2>
+            <h2 className="mb-4 text-lg font-semibold text-theme-text-primary">Set history</h2>
             {sets.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-zinc-700 py-6 text-center text-zinc-500">No sets logged for this exercise.</p>
+              <p className="rounded-xl border border-dashed border-theme-border py-6 text-center text-theme-text-muted">No sets logged for this exercise.</p>
             ) : (
-              <div className="overflow-hidden rounded-xl border border-zinc-800">
+              <div className="overflow-hidden rounded-xl border border-theme-border">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-zinc-800 bg-zinc-900/50 text-left text-zinc-500">
+                    <tr className="border-b border-theme-border bg-theme-surface/50 text-left text-theme-text-muted">
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">Workout</th>
                       <th className="px-4 py-3">Set</th>
@@ -237,20 +237,20 @@ export default function ExerciseProgressPage() {
                   </thead>
                   <tbody>
                     {sets.map((row) => (
-                      <tr key={row.id} className="border-b border-zinc-800/80 hover:bg-zinc-800/30">
-                        <td className="px-4 py-3 text-zinc-400">
+                      <tr key={row.id} className="border-b border-theme-border/80 hover:bg-theme-border/90/30">
+                        <td className="px-4 py-3 text-theme-text-muted">
                           {row.completed_at ? new Date(row.completed_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "—"}
                         </td>
                         <td className="px-4 py-3">
-                          <Link href={`/workouts/history/${row.workout_log_id}`} className="text-white hover:text-[#f97316]">
+                          <Link href={`/workouts/history/${row.workout_log_id}`} className="text-theme-text-primary hover:text-theme-accent">
                             {row.log_name}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-zinc-400">{row.set_number}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.reps ?? "—"}</td>
-                        <td className="px-4 py-3 text-zinc-400">{formatWeight(row.weight_kg, { inLbs: true })}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.duration_seconds != null ? `${row.duration_seconds}s` : "—"}</td>
-                        <td className="px-4 py-3 text-zinc-400">{row.rpe ?? "—"}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.set_number}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.reps ?? "—"}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{formatWeight(row.weight_kg, { inLbs: true })}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.duration_seconds != null ? `${row.duration_seconds}s` : "—"}</td>
+                        <td className="px-4 py-3 text-theme-text-muted">{row.rpe ?? "—"}</td>
                       </tr>
                     ))}
                   </tbody>
