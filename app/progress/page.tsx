@@ -32,6 +32,7 @@ export default function ProgressPage() {
           .from("workout_logs")
           .select("id")
           .eq("user_id", user.id)
+          .eq("is_draft", false)
           .not("completed_at", "is", null);
         const logIds = (logRows ?? []).map((r: { id: string }) => r.id);
         if (logIds.length === 0) {

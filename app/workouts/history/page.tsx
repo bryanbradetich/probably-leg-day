@@ -35,8 +35,9 @@ export default function WorkoutHistoryPage() {
 
     const { data: logRows, error: logError } = await supabase
       .from("workout_logs")
-      .select("id, name, completed_at, duration_seconds, user_id, template_id, mesocycle_id, started_at, notes, created_at, updated_at")
+      .select("id, user_id, mesocycle_id, template_id, name, started_at, completed_at, duration_seconds, notes, created_at")
       .eq("user_id", user.id)
+      .eq("is_draft", false)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false });
 

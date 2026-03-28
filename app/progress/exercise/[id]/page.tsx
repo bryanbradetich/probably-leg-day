@@ -58,8 +58,10 @@ export default function ExerciseProgressPage() {
 
     const { data: setRows } = await supabase
       .from("workout_log_exercises")
-      .select("*, workout_logs!inner(completed_at, name)")
+      .select("*, workout_logs!inner(completed_at, name, is_draft)")
       .eq("exercise_id", id)
+      .eq("workout_logs.is_draft", false)
+      .not("workout_logs.completed_at", "is", null)
       .order("created_at", { ascending: true });
     const list: SetRow[] = [];
     for (const row of setRows ?? []) {

@@ -92,6 +92,7 @@ export default function MesocycleReportPage() {
       .from("workout_logs")
       .select("*")
       .eq("mesocycle_id", id)
+      .eq("is_draft", false)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: true });
     const logList = (logRows ?? []) as WorkoutLog[];

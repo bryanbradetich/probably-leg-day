@@ -74,6 +74,7 @@ export default function EditWorkoutPage() {
         .select("*")
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("is_draft", false)
         .single();
 
       if (logError || !logData) {

@@ -31,6 +31,7 @@ export default function WorkoutComparePage() {
         .from("workout_logs")
         .select("id, name, completed_at")
         .eq("user_id", user.id)
+        .eq("is_draft", false)
         .not("completed_at", "is", null)
         .order("completed_at", { ascending: false });
       setLogs((data ?? []) as LogOption[]);

@@ -96,7 +96,11 @@ export default function MesocyclesPage() {
 
     const [tRes, lRes] = await Promise.all([
       supabase.from("workout_templates").select("mesocycle_id").in("mesocycle_id", ids),
-      supabase.from("workout_logs").select("mesocycle_id").in("mesocycle_id", ids),
+      supabase
+        .from("workout_logs")
+        .select("mesocycle_id")
+        .eq("is_draft", false)
+        .in("mesocycle_id", ids),
     ]);
 
     const templateCount: Record<string, number> = {};

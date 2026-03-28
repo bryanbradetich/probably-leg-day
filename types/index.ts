@@ -91,6 +91,7 @@ export interface WorkoutLog {
   duration_seconds: number | null;
   notes: string | null;
   created_at: string;
+  is_draft?: boolean;
 }
 
 export interface WorkoutLogExercise {

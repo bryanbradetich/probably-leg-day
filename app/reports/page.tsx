@@ -82,6 +82,7 @@ export default function ReportsPage() {
       .from("workout_logs")
       .select("id, user_id, name, completed_at, duration_seconds, template_id, mesocycle_id, started_at")
       .eq("user_id", user.id)
+      .eq("is_draft", false)
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: true });
       if (from) logsQuery.gte("completed_at", from);

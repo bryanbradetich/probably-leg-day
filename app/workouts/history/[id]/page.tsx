@@ -37,9 +37,12 @@ export default function WorkoutHistoryDetailPage() {
 
       const { data: logData, error: logError } = await supabase
         .from("workout_logs")
-        .select("*")
+        .select(
+          "id, user_id, mesocycle_id, template_id, name, started_at, completed_at, duration_seconds, notes, created_at"
+        )
         .eq("id", id)
         .eq("user_id", user.id)
+        .eq("is_draft", false)
         .single();
 
       if (logError || !logData) {

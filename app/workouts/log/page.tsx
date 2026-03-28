@@ -41,6 +41,148 @@ function formatDuration(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function toNumNull(v: number | null | undefined | string): number | null {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function toIntNull(v: number | null | undefined | string): number | null {
+  const n = toNumNull(v);
+  return n === null ? null : Math.floor(n);
+}
+
+function toRpe(v: number | null | undefined | string): number | null {
+  const n = toNumNull(v);
+  if (n === null) return null;
+  if (n >= 1 && n <= 10) return n;
+  return null;
+}
+
+function toPositiveInt(value: number, fallback: number): number {
+  const n = Math.floor(Number(value));
+  return Number.isFinite(n) && n >= 1 ? n : fallback;
+}
+
+type DraftExerciseRow = {
+  workout_log_id: string;
+  exercise_id: string;
+  order_index: number;
+  set_number: number;
+  reps: number | null;
+  weight_kg: number | null;
+  duration_seconds: number | null;
+  rpe: number | null;
+  weight_logging_choice: string | null;
+};
+
+function buildDraftExerciseRows(
+  workoutLogId: string,
+  entries: LogExerciseEntry[]
+): DraftExerciseRow[] {
+  const toInsert: DraftExerciseRow[] = [];
+  let orderIndex = 1;
+  for (const entry of entries) {
+    const choice =
+      entry.exercise.weight_logging === "user_choice"
+        ? entry.weightLoggingChoice ?? null
+        : null;
+    if (entry.sets.length === 0) {
+      toInsert.push({
+        workout_log_id: workoutLogId,
+        exercise_id: entry.exercise.id,
+        order_index: orderIndex,
+        set_number: 1,
+        reps: null,
+        weight_kg: null,
+        duration_seconds: null,
+        rpe: null,
+        weight_logging_choice: choice,
+      });
+    } else {
+      for (let s = 0; s < entry.sets.length; s++) {
+        const set = entry.sets[s];
+        toInsert.push({
+          workout_log_id: workoutLogId,
+          exercise_id: entry.exercise.id,
+          order_index: orderIndex,
+          set_number: toPositiveInt(s + 1, 1),
+          reps: toIntNull(set.reps),
+          weight_kg: toNumNull(set.weight_kg),
+          duration_seconds: toIntNull(set.duration_seconds),
+          rpe: toRpe(set.rpe),
+          weight_logging_choice: choice,
+        });
+      }
+    }
+    orderIndex += 1;
+  }
+  return toInsert;
+}
+
+function rowIsPlaceholder(row: {
+  reps: number | null;
+  weight_kg: number | null;
+  duration_seconds: number | null;
+  rpe: number | null;
+}): boolean {
+  return (
+    row.reps == null &&
+    row.weight_kg == null &&
+    row.duration_seconds == null &&
+    row.rpe == null
+  );
+}
+
+function formatTimeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  const sec = Math.floor((Date.now() - then) / 1000);
+  if (sec < 60) return "just now";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} minute${min === 1 ? "" : "s"} ago`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} hour${h === 1 ? "" : "s"} ago`;
+  const d = Math.floor(h / 24);
+  return `${d} day${d === 1 ? "" : "s"} ago`;
+}
+
+function formatSessionDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function formatHistoryLine(
+  exerciseType: "reps_sets" | "timed",
+  completedAt: string,
+  setRows: {
+    reps: number | null;
+    weight_kg: number | null;
+    duration_seconds: number | null;
+  }[]
+): string {
+  const date = formatSessionDate(completedAt);
+  if (exerciseType === "timed") {
+    const parts = setRows.map((r) =>
+      r.duration_seconds != null ? `${r.duration_seconds}s` : "—"
+    );
+    const n = setRows.length;
+    return `${date}: ${n} set${n === 1 ? "" : "s"} @ ${parts.join(", ")}`;
+  }
+  const parts = setRows.map((r) => {
+    const reps = r.reps ?? "?";
+    const lbs = r.weight_kg != null ? kgToLbs(r.weight_kg) : null;
+    if (lbs != null) {
+      const w =
+        lbs % 1 === 0 ? lbs.toFixed(0) : lbs.toFixed(1);
+      return `${reps} @ ${w} lbs`;
+    }
+    return `${reps} reps`;
+  });
+  return `${date}: ${parts.join(", ")}`;
+}
+
 export default function LogWorkoutPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -70,6 +212,18 @@ export default function LogWorkoutPage() {
     totalVolume: number;
     prs: { exerciseName: string; type: RecordType; value: number }[];
   } | null>(null);
+  const [existingDraft, setExistingDraft] = useState<WorkoutLog | null>(null);
+  const [draftCheckDone, setDraftCheckDone] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [historyByExercise, setHistoryByExercise] = useState<
+    Record<string, string[]>
+  >({});
+  const draftSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveStatusClearRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   useEffect(() => {
     (async () => {
@@ -80,7 +234,7 @@ export default function LogWorkoutPage() {
         return;
       }
       setUserId(user.id);
-      const [tRes, mRes, eRes] = await Promise.all([
+      const [tRes, mRes, eRes, draftRes] = await Promise.all([
         supabase
           .from("workout_templates")
           .select("*")
@@ -94,6 +248,14 @@ export default function LogWorkoutPage() {
           .order("status", { ascending: false })
           .order("start_date", { ascending: false }),
         supabase.from("exercises").select("*").order("name"),
+        supabase
+          .from("workout_logs")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("is_draft", true)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
       setTemplates((tRes.data as WorkoutTemplate[]) ?? []);
       const mesoList = (mRes.data as Mesocycle[]) ?? [];
@@ -101,6 +263,8 @@ export default function LogWorkoutPage() {
       const active = mesoList.find((m) => m.status === "active");
       setMesocycleId(active?.id ?? null);
       setExercises((eRes.data as Exercise[]) ?? []);
+      setExistingDraft((draftRes.data as WorkoutLog | null) ?? null);
+      setDraftCheckDone(true);
     })();
   }, [router]);
 
@@ -117,6 +281,7 @@ export default function LogWorkoutPage() {
           mesocycle_id: mesocycleId,
           name: name.trim() || "Workout",
           started_at: now,
+          is_draft: true,
         })
         .select()
         .single();
@@ -158,10 +323,311 @@ export default function LogWorkoutPage() {
         }));
       }
       setLogEntries(entries);
+      setExistingDraft(null);
       setPhase("active");
     },
     [userId, mesocycleId]
   );
+
+  const continueDraft = useCallback(async () => {
+    if (!userId || !existingDraft) return;
+    const supabase = createClient();
+    const draft = existingDraft;
+
+    const { data: setRows } = await supabase
+      .from("workout_log_exercises")
+      .select("*")
+      .eq("workout_log_id", draft.id)
+      .order("order_index")
+      .order("set_number");
+
+    let templateRows: (WorkoutTemplateExercise & { exercises: Exercise })[] =
+      [];
+    if (draft.template_id) {
+      const { data: teRows } = await supabase
+        .from("workout_template_exercises")
+        .select("*, exercises(*)")
+        .eq("template_id", draft.template_id)
+        .order("order_index");
+      templateRows = (teRows ?? []) as (WorkoutTemplateExercise & {
+        exercises: Exercise;
+      })[];
+    }
+
+    const exerciseById: Record<string, Exercise> = Object.fromEntries(
+      exercises.map((e) => [e.id, e])
+    );
+
+    const groups = new Map<number, WorkoutLogExercise[]>();
+    for (const row of setRows ?? []) {
+      const r = row as WorkoutLogExercise;
+      const oi = r.order_index;
+      if (!groups.has(oi)) groups.set(oi, []);
+      groups.get(oi)!.push(r);
+    }
+    const sortedOrder = Array.from(groups.keys()).sort((a, b) => a - b);
+
+    const entries: LogExerciseEntry[] = [];
+    for (const orderIndex of sortedOrder) {
+      const g = groups.get(orderIndex)!;
+      const exId = g[0].exercise_id;
+      let exercise = exerciseById[exId];
+      if (!exercise) {
+        const { data: oneEx } = await supabase
+          .from("exercises")
+          .select("*")
+          .eq("id", exId)
+          .single();
+        if (!oneEx) continue;
+        exercise = oneEx as Exercise;
+        exerciseById[exId] = exercise;
+      }
+
+      const isPh = g.length === 1 && rowIsPlaceholder(g[0]);
+      const sets: SetEntry[] = isPh
+        ? []
+        : g.map((r) => ({
+            reps: r.reps,
+            weight_kg:
+              r.weight_kg != null ? Number(r.weight_kg) : null,
+            duration_seconds: r.duration_seconds,
+            rpe: r.rpe != null ? Number(r.rpe) : null,
+          }));
+
+      const tr = templateRows.find((t) => t.exercise_id === exId);
+      const templateTarget = tr
+        ? {
+            target_sets: tr.target_sets,
+            target_reps: tr.target_reps,
+            target_duration_seconds: tr.target_duration_seconds,
+            target_rest_seconds: tr.target_rest_seconds ?? 0,
+          }
+        : undefined;
+
+      const wChoice = g.find((x) => x.weight_logging_choice)?.weight_logging_choice;
+
+      entries.push({
+        exercise,
+        templateTarget,
+        sets,
+        weightLoggingChoice:
+          exercise.weight_logging === "user_choice"
+            ? (wChoice as "per_hand" | "total" | undefined) ?? "total"
+            : undefined,
+      });
+    }
+
+    setWorkoutLogId(draft.id);
+    setWorkoutName(draft.name);
+    setTemplateId(draft.template_id);
+    setMesocycleId(draft.mesocycle_id);
+    setStartedAt(new Date(draft.started_at));
+    setElapsedSeconds(
+      Math.max(
+        0,
+        Math.floor(
+          (Date.now() - new Date(draft.started_at).getTime()) / 1000
+        )
+      )
+    );
+    setLogEntries(entries);
+    setExistingDraft(null);
+    setPhase("active");
+  }, [userId, existingDraft, exercises]);
+
+  const discardDraft = useCallback(async () => {
+    if (!existingDraft) return;
+    const supabase = createClient();
+    await supabase.from("workout_logs").delete().eq("id", existingDraft.id);
+    setExistingDraft(null);
+  }, [existingDraft]);
+
+  const logAnotherWorkout = useCallback(async () => {
+    if (draftSaveTimerRef.current) {
+      clearTimeout(draftSaveTimerRef.current);
+      draftSaveTimerRef.current = null;
+    }
+    if (userId) {
+      const supabase = createClient();
+      await supabase
+        .from("workout_logs")
+        .delete()
+        .eq("user_id", userId)
+        .eq("is_draft", true);
+    }
+    window.location.href = "/workouts/log";
+  }, [userId]);
+
+  const historyKey = logEntries.map((e) => e.exercise.id).join(",");
+
+  useEffect(() => {
+    if (phase !== "active" || !userId || !workoutLogId || !historyKey) {
+      setHistoryByExercise({});
+      return;
+    }
+    const ids = Array.from(new Set(logEntries.map((e) => e.exercise.id)));
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("workout_log_exercises")
+        .select(
+          `
+          exercise_id,
+          reps,
+          weight_kg,
+          duration_seconds,
+          set_number,
+          order_index,
+          workout_log_id,
+          workout_logs!inner ( completed_at, user_id, is_draft )
+        `
+        )
+        .in("exercise_id", ids)
+        .eq("workout_logs.user_id", userId)
+        .eq("workout_logs.is_draft", false)
+        .not("workout_logs.completed_at", "is", null);
+
+      if (cancelled) return;
+      if (error) {
+        console.error("Exercise history load failed", error);
+        return;
+      }
+
+      type HRow = {
+        exercise_id: string;
+        workout_log_id: string;
+        reps: number | null;
+        weight_kg: number | null;
+        duration_seconds: number | null;
+        set_number: number;
+        order_index: number;
+        workout_logs: { completed_at: string; user_id: string; is_draft: boolean };
+      };
+
+      const rows = (data as unknown as HRow[] | null | undefined)?.filter(
+        (r) => r.workout_log_id !== workoutLogId
+      ) ?? [];
+
+      const byEx: Record<
+        string,
+        Record<string, { completed_at: string; sets: HRow[] }>
+      > = {};
+      for (const r of rows) {
+        const wid = r.workout_log_id;
+        const eid = r.exercise_id;
+        if (!byEx[eid]) byEx[eid] = {};
+        if (!byEx[eid][wid]) {
+          byEx[eid][wid] = {
+            completed_at: r.workout_logs.completed_at,
+            sets: [],
+          };
+        }
+        byEx[eid][wid].sets.push(r);
+      }
+
+      const exTypeById = Object.fromEntries(
+        logEntries.map((e) => [e.exercise.id, e.exercise.type])
+      );
+
+      const out: Record<string, string[]> = {};
+      for (const eid of ids) {
+        const sessions = Object.entries(byEx[eid] ?? {})
+          .map(([, v]) => v)
+          .sort(
+            (a, b) =>
+              new Date(b.completed_at).getTime() -
+              new Date(a.completed_at).getTime()
+          )
+          .slice(0, 3);
+
+        const exType = exTypeById[eid] ?? "reps_sets";
+        const lines: string[] = [];
+        for (const s of sessions) {
+          const sortedSets = [...s.sets].sort(
+            (a, b) =>
+              a.order_index - b.order_index || a.set_number - b.set_number
+          );
+          const realSets = sortedSets.filter(
+            (row) =>
+              row.reps != null ||
+              row.weight_kg != null ||
+              row.duration_seconds != null
+          );
+          if (realSets.length === 0) continue;
+          lines.push(formatHistoryLine(exType, s.completed_at, realSets));
+        }
+        out[eid] = lines;
+      }
+
+      if (!cancelled) setHistoryByExercise(out);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [phase, userId, workoutLogId, historyKey]);
+
+  useEffect(() => {
+    if (phase !== "active" || !workoutLogId || !startedAt) return;
+
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+
+    draftSaveTimerRef.current = setTimeout(async () => {
+      const supabase = createClient();
+      const startedIso = startedAt.toISOString();
+      setSaveStatus("saving");
+      try {
+        const { error: uErr } = await supabase
+          .from("workout_logs")
+          .update({
+            name: workoutName.trim() || "Workout",
+            mesocycle_id: mesocycleId,
+            started_at: startedIso,
+          })
+          .eq("id", workoutLogId)
+          .eq("is_draft", true);
+
+        if (uErr) throw uErr;
+
+        await supabase
+          .from("workout_log_exercises")
+          .delete()
+          .eq("workout_log_id", workoutLogId);
+
+        const rows = buildDraftExerciseRows(workoutLogId, logEntries);
+        if (rows.length > 0) {
+          const { error: iErr } = await supabase
+            .from("workout_log_exercises")
+            .insert(rows);
+          if (iErr) throw iErr;
+        }
+
+        setSaveStatus("saved");
+        if (saveStatusClearRef.current)
+          clearTimeout(saveStatusClearRef.current);
+        saveStatusClearRef.current = setTimeout(() => {
+          setSaveStatus("idle");
+        }, 2000);
+      } catch (e) {
+        console.error("Draft save failed", e);
+        setSaveStatus("error");
+      }
+    }, 500);
+
+    return () => {
+      if (draftSaveTimerRef.current) {
+        clearTimeout(draftSaveTimerRef.current);
+        draftSaveTimerRef.current = null;
+      }
+    };
+  }, [
+    phase,
+    workoutLogId,
+    workoutName,
+    mesocycleId,
+    startedAt,
+    logEntries,
+  ]);
 
   useEffect(() => {
     if (phase !== "active" || !startedAt) return;
@@ -267,6 +733,10 @@ export default function LogWorkoutPage() {
 
   async function finishWorkout() {
     if (!userId || !workoutLogId) return;
+    if (draftSaveTimerRef.current) {
+      clearTimeout(draftSaveTimerRef.current);
+      draftSaveTimerRef.current = null;
+    }
     const supabase = createClient();
     const completedAt = new Date();
     const started = startedAt ?? completedAt;
@@ -275,39 +745,20 @@ export default function LogWorkoutPage() {
     );
 
     await supabase
+      .from("workout_log_exercises")
+      .delete()
+      .eq("workout_log_id", workoutLogId);
+
+    await supabase
       .from("workout_logs")
       .update({
         completed_at: completedAt.toISOString(),
         duration_seconds: durationSeconds,
         mesocycle_id: mesocycleId,
+        name: workoutName.trim() || "Workout",
+        is_draft: false,
       })
       .eq("id", workoutLogId);
-
-    // Sanitize optional numeric: null/undefined/""/NaN -> null; otherwise number (for DB constraints)
-    function toNumNull(
-      v: number | null | undefined | string
-    ): number | null {
-      if (v === null || v === undefined || v === "") return null;
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    }
-    function toIntNull(
-      v: number | null | undefined | string
-    ): number | null {
-      const n = toNumNull(v);
-      return n === null ? null : Math.floor(n);
-    }
-    // rpe must be NULL or between 1 and 10 (DB check constraint)
-    function toRpe(v: number | null | undefined | string): number | null {
-      const n = toNumNull(v);
-      if (n === null) return null;
-      if (n >= 1 && n <= 10) return n;
-      return null;
-    }
-    function toPositiveInt(value: number, fallback: number): number {
-      const n = Math.floor(Number(value));
-      return Number.isFinite(n) && n >= 1 ? n : fallback;
-    }
 
     const toInsert: {
       workout_log_id: string;
@@ -561,6 +1012,7 @@ export default function LogWorkoutPage() {
   if (userId === null) return null;
 
   if (phase === "start") {
+    const hasDraft = draftCheckDone && existingDraft;
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
         <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
@@ -570,6 +1022,32 @@ export default function LogWorkoutPage() {
           <p className="mt-2 text-zinc-400">
             Start from a template or begin an empty workout.
           </p>
+
+          {hasDraft && (
+            <div className="mt-6 rounded-xl border-2 border-[#f97316] bg-[#f97316]/10 p-4 shadow-lg">
+              <p className="text-sm font-medium text-zinc-100">
+                You have an unfinished workout from{" "}
+                {formatTimeAgo(existingDraft.started_at)}. Would you like to
+                continue?
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => void continueDraft()}
+                  className="rounded-xl bg-[#f97316] px-4 py-2.5 text-sm font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+                >
+                  Continue workout
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void discardDraft()}
+                  className="rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
+                >
+                  Start fresh
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-8 space-y-6">
             <div>
@@ -633,8 +1111,14 @@ export default function LogWorkoutPage() {
 
             <button
               type="button"
+              disabled={!!hasDraft}
+              title={
+                hasDraft
+                  ? "Continue or discard your draft workout first"
+                  : undefined
+              }
               onClick={() => startWorkout(templateId, workoutName)}
-              className="w-full rounded-xl bg-[#f97316] py-4 text-lg font-semibold text-[#0a0a0a] shadow-lg transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
+              className="w-full rounded-xl bg-[#f97316] py-4 text-lg font-semibold text-[#0a0a0a] shadow-lg transition hover:bg-[#ea580c] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#0a0a0a] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {templateId ? "Start from template" : "Start empty workout"}
             </button>
@@ -696,12 +1180,13 @@ export default function LogWorkoutPage() {
                 </ul>
               </div>
             )}
-            <Link
-              href="/workouts/log"
+            <button
+              type="button"
               className="mt-4 block w-full rounded-xl bg-[#f97316] py-3 text-center font-semibold text-[#0a0a0a] hover:bg-[#ea580c]"
+              onClick={() => void logAnotherWorkout()}
             >
               Log another workout
-            </Link>
+            </button>
             <Link
               href="/workouts/history"
               className="block w-full rounded-xl border border-zinc-600 bg-zinc-800 py-3 text-center font-medium text-zinc-300 hover:bg-zinc-700"
@@ -717,17 +1202,24 @@ export default function LogWorkoutPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-100">
       <div className="mx-auto max-w-3xl px-4 py-4 sm:px-6">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
             <input
               type="text"
               value={workoutName}
               onChange={(e) => setWorkoutName(e.target.value)}
-              className="bg-transparent text-xl font-bold text-white focus:outline-none focus:ring-0"
+              className="w-full bg-transparent text-xl font-bold text-white focus:outline-none focus:ring-0"
             />
             <p className="text-2xl font-bold tabular-nums text-[#f97316]">
               {formatDuration(elapsedSeconds)}
             </p>
+          </div>
+          <div className="shrink-0 pt-1 text-xs text-zinc-400">
+            {saveStatus === "saving" && <span>Saving…</span>}
+            {saveStatus === "saved" && <span>Saved</span>}
+            {saveStatus === "error" && (
+              <span className="text-red-400">Save failed</span>
+            )}
           </div>
         </div>
 
@@ -754,6 +1246,13 @@ export default function LogWorkoutPage() {
               className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4"
             >
               <p className="font-semibold text-white">{entry.exercise.name}</p>
+              {historyByExercise[entry.exercise.id]?.length ? (
+                <div className="mt-1 space-y-0.5 text-[11px] leading-snug text-zinc-500">
+                  {historyByExercise[entry.exercise.id].map((line, hi) => (
+                    <p key={hi}>{line}</p>
+                  ))}
+                </div>
+              ) : null}
               {entry.templateTarget && (
                 <p className="mt-0.5 text-sm text-zinc-500">
                   Target: {entry.templateTarget.target_sets} sets

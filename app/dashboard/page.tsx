@@ -36,6 +36,7 @@ export default function DashboardPage() {
         .from("workout_logs")
         .select("id")
         .eq("user_id", u.id)
+        .eq("is_draft", false)
         .not("completed_at", "is", null)
         .gte("completed_at", `${today}T00:00:00Z`)
         .lt("completed_at", `${today}T23:59:59.999Z`)
