@@ -17,18 +17,39 @@ const navLinks: { href?: string; label: string; subLinks?: { href: string; label
   },
   { href: "/exercises", label: "Exercises" },
   { href: "/mesocycles", label: "Mesocycles" },
-  { href: "/progress", label: "Progress" },
+  {
+    label: "Progress",
+    subLinks: [
+      { href: "/progress/records", label: "Records" },
+      { href: "/progress/measurements", label: "Measurements" },
+      { href: "/weight", label: "Weight" },
+    ],
+  },
   { href: "/reports", label: "Reports" },
 ];
+
+function subLinkIsActive(pathname: string | null | undefined, href: string): boolean {
+  if (!pathname) return false;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function AppNav() {
   const pathname = usePathname();
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [workoutsOpen, setWorkoutsOpen] = useState(false);
+  const [progressOpen, setProgressOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const workoutsActive =
     pathname?.startsWith("/workouts/log") || pathname?.startsWith("/workouts/history");
+
+  const progressActive =
+    pathname === "/progress" ||
+    pathname?.startsWith("/progress/exercise/") ||
+    pathname?.startsWith("/progress/records") ||
+    pathname?.startsWith("/progress/measurements") ||
+    pathname === "/weight" ||
+    pathname?.startsWith("/weight/");
 
   useEffect(() => {
     const supabase = createClient();
@@ -44,47 +65,47 @@ export function AppNav() {
   useEffect(() => {
     setMobileOpen(false);
     setWorkoutsOpen(false);
+    setProgressOpen(false);
   }, [pathname]);
 
   const navContent = (
     <>
       {navLinks.map((link) => {
         if (link.subLinks) {
+          const isWorkouts = link.label === "Workouts";
+          const open = isWorkouts ? workoutsOpen : progressOpen;
+          const setOpen = isWorkouts ? setWorkoutsOpen : setProgressOpen;
+          const active = isWorkouts ? workoutsActive : progressActive;
           return (
             <div key={link.label} className="relative">
               <button
                 type="button"
-                onClick={() => setWorkoutsOpen((o) => !o)}
+                onClick={() => setOpen((o) => !o)}
                 className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  workoutsActive
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                  active ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
                 }`}
               >
                 {link.label} ▾
               </button>
-              {workoutsOpen && (
+              {open && (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    aria-hidden
-                    onClick={() => setWorkoutsOpen(false)}
-                  />
-                  <div className="absolute left-0 top-full z-20 mt-1 min-w-[140px] rounded-lg border border-zinc-800 bg-[#0a0a0a] py-1 shadow-xl">
-                    {link.subLinks.map((sub) => (
-                      <Link
-                        key={sub.href}
-                        href={sub.href}
-                        onClick={() => setWorkoutsOpen(false)}
-                        className={`block px-4 py-2 text-sm ${
-                          pathname === sub.href || pathname?.startsWith(sub.href + "/")
-                            ? "bg-zinc-800 text-white"
-                            : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
-                        }`}
-                      >
-                        {sub.label}
-                      </Link>
-                    ))}
+                  <div className="fixed inset-0 z-10" aria-hidden onClick={() => setOpen(false)} />
+                  <div className="absolute left-0 top-full z-20 mt-1 min-w-[160px] rounded-lg border border-zinc-800 bg-[#0a0a0a] py-1 shadow-xl">
+                    {link.subLinks.map((sub) => {
+                      const subActive = subLinkIsActive(pathname, sub.href);
+                      return (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={() => setOpen(false)}
+                          className={`block px-4 py-2 text-sm ${
+                            subActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-800/50 hover:text-white"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -184,7 +205,7 @@ export function AppNav() {
                         {link.label}
                       </span>
                       {link.subLinks.map((sub) => {
-                        const isActive = pathname === sub.href || pathname?.startsWith(sub.href + "/");
+                        const isActive = subLinkIsActive(pathname, sub.href);
                         return (
                           <Link
                             key={sub.href}

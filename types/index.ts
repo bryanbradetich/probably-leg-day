@@ -135,3 +135,25 @@ export interface BodyMeasurement {
   notes: string | null;
   created_at: string;
 }
+
+export type WeeklyLossType = "percentage" | "fixed";
+
+export interface DailyWeight {
+  id: string;
+  user_id: string;
+  logged_date: string;
+  weight_kg: number;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface WeightGoal {
+  id: string;
+  user_id: string;
+  goal_weight_kg: number;
+  target_date: string | null;
+  weekly_loss_type: WeeklyLossType;
+  weekly_loss_value: number;
+  created_at: string;
+  updated_at: string;
+}
