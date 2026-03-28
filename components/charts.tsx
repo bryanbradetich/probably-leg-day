@@ -47,7 +47,8 @@ export function ChartCard({
 /** Props passed by Recharts Tooltip content + our optional formatters */
 type ChartTooltipProps = {
   active?: boolean;
-  payload?: Array<{ name?: string; value?: number; dataKey?: string }>;
+  /** Recharts tooltip payload; typed loosely for Recharts v3 compatibility */
+  payload?: ReadonlyArray<{ name?: unknown; value?: unknown; dataKey?: unknown }>;
   label?: unknown;
   labelFormatter?: (label: unknown) => string;
   formatter?: (value: number, name?: string) => string;
@@ -73,11 +74,11 @@ export function ChartTooltip({
       }}
     >
       {displayLabel && <p className="mb-1 font-medium text-zinc-200">{displayLabel}</p>}
-      {payload.map((entry) => (
-        <p key={String(entry.dataKey)}>
+      {payload.map((entry, i) => (
+        <p key={String(entry.dataKey ?? i)}>
           {formatter
-            ? formatter(Number(entry.value), entry.name as string)
-            : `${entry.name}: ${entry.value}`}
+            ? formatter(Number(entry.value), String(entry.name ?? ""))
+            : `${String(entry.name ?? "")}: ${entry.value}`}
         </p>
       ))}
     </div>

@@ -25,6 +25,15 @@ const navLinks: { href?: string; label: string; subLinks?: { href: string; label
       { href: "/weight", label: "Weight" },
     ],
   },
+  {
+    label: "Food",
+    subLinks: [
+      { href: "/food", label: "Today's Log" },
+      { href: "/food/library", label: "Food Library" },
+      { href: "/food/templates", label: "Meal Templates" },
+      { href: "/food/weekly", label: "Weekly Summary" },
+    ],
+  },
   { href: "/reports", label: "Reports" },
 ];
 
@@ -38,6 +47,7 @@ export function AppNav() {
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [workoutsOpen, setWorkoutsOpen] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
+  const [foodOpen, setFoodOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const workoutsActive =
@@ -50,6 +60,8 @@ export function AppNav() {
     pathname?.startsWith("/progress/measurements") ||
     pathname === "/weight" ||
     pathname?.startsWith("/weight/");
+
+  const foodActive = pathname === "/food" || pathname?.startsWith("/food/");
 
   useEffect(() => {
     const supabase = createClient();
@@ -66,6 +78,7 @@ export function AppNav() {
     setMobileOpen(false);
     setWorkoutsOpen(false);
     setProgressOpen(false);
+    setFoodOpen(false);
   }, [pathname]);
 
   const navContent = (
@@ -73,9 +86,10 @@ export function AppNav() {
       {navLinks.map((link) => {
         if (link.subLinks) {
           const isWorkouts = link.label === "Workouts";
-          const open = isWorkouts ? workoutsOpen : progressOpen;
-          const setOpen = isWorkouts ? setWorkoutsOpen : setProgressOpen;
-          const active = isWorkouts ? workoutsActive : progressActive;
+          const isFood = link.label === "Food";
+          const open = isWorkouts ? workoutsOpen : isFood ? foodOpen : progressOpen;
+          const setOpen = isWorkouts ? setWorkoutsOpen : isFood ? setFoodOpen : setProgressOpen;
+          const active = isWorkouts ? workoutsActive : isFood ? foodActive : progressActive;
           return (
             <div key={link.label} className="relative">
               <button

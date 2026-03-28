@@ -17,7 +17,9 @@ import {
   mondayOfWeek,
   sundayOfWeekFromMonday,
 } from "@/lib/weight-helpers";
-import type { DailyWeight, WeightGoal } from "@/types";
+import type { DailyFoodLogWithFood, DailyWeight, NutritionGoal, WeightGoal } from "@/types";
+import { DashboardFoodWidget } from "@/components/food/DashboardFoodWidget";
+import { scaledNutrients, sumNutrients } from "@/lib/food-helpers";
 
 type WeightWidget = {
   currentLbs: number;
@@ -35,6 +37,13 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [loggedToday, setLoggedToday] = useState(false);
   const [weightWidget, setWeightWidget] = useState<WeightWidget | null>(null);
+  const [nutritionGoal, setNutritionGoal] = useState<NutritionGoal | null>(null);
+  const [foodTotalsToday, setFoodTotalsToday] = useState<{
+    calories: number;
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+  } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -166,6 +175,28 @@ export default function DashboardPage() {
         setWeightWidget(null);
       }
 
+      const { data: ng } = await supabase
+        .from("nutrition_goals")
+        .select("*")
+        .eq("user_id", u.id)
+        .maybeSingle();
+      if (ng) {
+        setNutritionGoal(ng as NutritionGoal);
+        const todayFood = localISODate();
+        const { data: foodRows } = await supabase
+          .from("daily_food_logs")
+          .select("*, foods(*)")
+          .eq("user_id", u.id)
+          .eq("logged_date", todayFood);
+        const rows = (foodRows ?? []) as DailyFoodLogWithFood[];
+        setFoodTotalsToday(
+          sumNutrients(rows.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit)))
+        );
+      } else {
+        setNutritionGoal(null);
+        setFoodTotalsToday(null);
+      }
+
       setLoading(false);
     })();
   }, [router]);
@@ -202,6 +233,10 @@ export default function DashboardPage() {
           title="Dashboard"
           description={`${todayFormatted}${user.email ? ` · ${user.email}` : ""}`}
         />
+
+        {nutritionGoal && foodTotalsToday && (
+          <DashboardFoodWidget goal={nutritionGoal} totals={foodTotalsToday} />
+        )}
 
         {weightWidget && (
           <Link

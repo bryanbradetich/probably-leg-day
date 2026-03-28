@@ -157,3 +157,60 @@ export interface WeightGoal {
   created_at: string;
   updated_at: string;
 }
+
+export type FoodServingUnit = "g" | "oz";
+
+export interface Food {
+  id: string;
+  user_id: string | null;
+  name: string;
+  brand: string | null;
+  serving_size: number;
+  serving_unit: FoodServingUnit;
+  calories: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  is_public: boolean;
+  created_at: string;
+}
+
+export interface MealTemplate {
+  id: string;
+  user_id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface MealTemplateFood {
+  id: string;
+  template_id: string;
+  food_id: string;
+  quantity: number;
+  serving_unit: FoodServingUnit;
+}
+
+export interface DailyFoodLog {
+  id: string;
+  user_id: string;
+  logged_date: string;
+  meal_slot: number;
+  food_id: string;
+  quantity: number;
+  serving_unit: FoodServingUnit;
+  created_at: string;
+}
+
+export interface NutritionGoal {
+  id: string;
+  user_id: string;
+  daily_calories: number;
+  protein_pct: number;
+  carbs_pct: number;
+  fat_pct: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Log row from Supabase with joined food */
+export type DailyFoodLogWithFood = DailyFoodLog & { foods: Food };
