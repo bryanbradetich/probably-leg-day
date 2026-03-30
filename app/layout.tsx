@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { AppNav } from "@/components/AppNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 import { getThemeBootInlineScript } from "@/lib/themes";
 import "./globals.css";
 
@@ -30,8 +31,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: getThemeBootInlineScript() }}
         />
         <ThemeProvider>
-          <AppNav />
-          {children}
+          <ToastProvider>
+            <AppNav />
+            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

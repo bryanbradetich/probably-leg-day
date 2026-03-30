@@ -7,7 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { useToast } from "@/components/ui/ToastProvider";
 import { FoodSearchPicker } from "@/components/food/FoodSearchPicker";
+import { CreateTemplateFromLogModal } from "@/components/food/CreateTemplateFromLogModal";
 import { TemplateLogModal, type TemplateWithFoods } from "@/components/food/TemplateLogModal";
 import { scaledNutrients, sumNutrients, formatKcal } from "@/lib/food-helpers";
 import { localISODate } from "@/lib/weight-helpers";
@@ -26,6 +28,7 @@ function newLine(): Line {
 
 export default function MealTemplatesPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -37,6 +40,8 @@ export default function MealTemplatesPage() {
   const [saving, setSaving] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [templateToLog, setTemplateToLog] = useState<TemplateWithFoods | null>(null);
+  const [createFromLogOpen, setCreateFromLogOpen] = useState(false);
+  const [createFromLogKey, setCreateFromLogKey] = useState(0);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -228,13 +233,25 @@ export default function MealTemplatesPage() {
 
         {!creating ? (
           <>
-            <button
-              type="button"
-              onClick={startNew}
-              className="mt-8 rounded-xl bg-theme-accent px-5 py-3 text-sm font-bold text-theme-on-accent"
-            >
-              New template
-            </button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={startNew}
+                className="rounded-xl bg-theme-accent px-5 py-3 text-sm font-bold text-theme-on-accent"
+              >
+                New template
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCreateFromLogKey((k) => k + 1);
+                  setCreateFromLogOpen(true);
+                }}
+                className="rounded-xl border border-theme-border bg-transparent px-5 py-3 text-sm font-bold text-theme-text-primary hover:bg-theme-surface/80"
+              >
+                Create from Log
+              </button>
+            </div>
             <ul className="mt-8 space-y-4">
               {templates.length === 0 ? (
                 <li className="rounded-xl border border-dashed border-theme-border py-12 text-center text-theme-text-muted">
@@ -401,6 +418,17 @@ export default function MealTemplatesPage() {
         defaultMealSlot={1}
         defaultDate={localISODate()}
         onLogged={() => void load()}
+      />
+
+      <CreateTemplateFromLogModal
+        key={createFromLogKey}
+        open={createFromLogOpen}
+        onClose={() => setCreateFromLogOpen(false)}
+        userId={userId}
+        onSaved={() => {
+          toast("Template saved!");
+          void load();
+        }}
       />
     </div>
   );

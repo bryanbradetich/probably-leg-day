@@ -46,13 +46,35 @@ export function LogFoodModal({
       setDate(existingLog.logged_date);
       setQuantity(String(existingLog.quantity));
       setUnit(existingLog.serving_unit);
-    } else {
-      setMealSlot(defaultMealSlot);
-      setDate(defaultDate ?? localISODate());
-      setQuantity("100");
-      setUnit("g");
+      return;
     }
-  }, [open, existingLog, defaultMealSlot, defaultDate]);
+    if (!food) return;
+
+    setMealSlot(defaultMealSlot);
+    setDate(defaultDate ?? localISODate());
+    setQuantity(String(food.serving_size));
+    setUnit(food.serving_unit);
+
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("daily_food_logs")
+        .select("quantity, serving_unit")
+        .eq("user_id", userId)
+        .eq("food_id", food.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setQuantity(String(data.quantity));
+      setUnit(data.serving_unit as FoodServingUnit);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, existingLog?.id, food?.id, defaultMealSlot, defaultDate, userId]);
 
   const qNum = parseFloat(quantity);
   const preview = useMemo(() => {
