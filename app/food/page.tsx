@@ -7,7 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { NutritionGoalSetup, type NutritionGoalSavePayload } from "@/components/food/NutritionGoalSetup";
+import {
+  NutritionGoalSetup,
+  type NutritionCalorieContext,
+  type NutritionGoalSavePayload,
+} from "@/components/food/NutritionGoalSetup";
 import { DailyNutritionSummary } from "@/components/food/DailyNutritionSummary";
 import { FoodSearchPicker } from "@/components/food/FoodSearchPicker";
 import { FoodPickerModal } from "@/components/food/FoodPickerModal";
@@ -24,7 +28,9 @@ import {
   macroCaloriePercents,
 } from "@/lib/food-helpers";
 import { addDays, formatShortDate, localISODate } from "@/lib/weight-helpers";
-import type { DailyFoodLogWithFood, Food, NutritionGoal } from "@/types";
+import type { DailyFoodLogWithFood, DailyWeight, Food, NutritionGoal, ProfileCalorieFields, WeightGoal } from "@/types";
+import { computeBmrTdeeForDate, profileBmrFieldsComplete } from "@/lib/calorie-helpers";
+import { getDynamicCaloricTarget, isActiveLossWeightGoal, nutritionCalorieMode } from "@/lib/calories";
 
 export default function FoodLogPage() {
   const router = useRouter();
@@ -50,6 +56,10 @@ export default function FoodLogPage() {
   const [logModalFood, setLogModalFood] = useState<Food | null>(null);
   const [logModalSlot, setLogModalSlot] = useState(1);
   const [editLog, setEditLog] = useState<DailyFoodLogWithFood | null>(null);
+  const [profileCal, setProfileCal] = useState<ProfileCalorieFields | null>(null);
+  const [weights, setWeights] = useState<DailyWeight[]>([]);
+  const [weightGoal, setWeightGoal] = useState<WeightGoal | null>(null);
+  const [additionalBurns, setAdditionalBurns] = useState(0);
 
   const load = useCallback(async () => {
     const supabase = createClient();
@@ -99,6 +109,36 @@ export default function FoodLogPage() {
     }
     setTemplates((tRows ?? []) as TemplateWithFoods[]);
 
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("height_cm, date_of_birth, biological_sex, activity_level, custom_activity_multiplier")
+      .eq("id", user.id)
+      .maybeSingle();
+    const pr = prof as Partial<Omit<ProfileCalorieFields, "id">> | null;
+    setProfileCal(
+      pr
+        ? {
+            id: user.id,
+            height_cm: pr.height_cm ?? null,
+            date_of_birth: pr.date_of_birth ?? null,
+            biological_sex: (pr.biological_sex as ProfileCalorieFields["biological_sex"]) ?? null,
+            activity_level: (pr.activity_level as ProfileCalorieFields["activity_level"]) ?? "sedentary",
+            custom_activity_multiplier: pr.custom_activity_multiplier ?? null,
+          }
+        : null
+    );
+
+    const { data: dw } = await supabase
+      .from("daily_weights")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("logged_date", { ascending: false })
+      .limit(500);
+    setWeights((dw ?? []) as DailyWeight[]);
+
+    const { data: wg } = await supabase.from("weight_goals").select("*").eq("user_id", user.id).maybeSingle();
+    setWeightGoal((wg ?? null) as WeightGoal | null);
+
     setLoading(false);
   }, [router]);
 
@@ -117,6 +157,21 @@ export default function FoodLogPage() {
     setLogs((data ?? []) as DailyFoodLogWithFood[]);
   }, []);
 
+  const loadBurnsForDate = useCallback(async (uid: string, date: string) => {
+    const supabase = createClient();
+    const { data, error: e } = await supabase
+      .from("calorie_burns")
+      .select("calories_burned")
+      .eq("user_id", uid)
+      .eq("logged_date", date);
+    if (e) {
+      setError(e.message);
+      return;
+    }
+    const sum = (data ?? []).reduce((s, r) => s + Number((r as { calories_burned: number }).calories_burned), 0);
+    setAdditionalBurns(sum);
+  }, []);
+
   useEffect(() => {
     void load();
   }, [load]);
@@ -125,6 +180,29 @@ export default function FoodLogPage() {
     if (!userId) return;
     void loadLogsForDate(userId, selectedDate);
   }, [userId, selectedDate, loadLogsForDate]);
+
+  useEffect(() => {
+    if (!userId) return;
+    void loadBurnsForDate(userId, selectedDate);
+  }, [userId, selectedDate, loadBurnsForDate]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`food_calorie_burns_${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "calorie_burns", filter: `user_id=eq.${userId}` },
+        () => {
+          void loadBurnsForDate(userId, selectedDate);
+        }
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [userId, selectedDate, loadBurnsForDate]);
 
   const bySlot = useMemo(() => {
     const m: Record<number, DailyFoodLogWithFood[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
@@ -138,6 +216,69 @@ export default function FoodLogPage() {
   const dayTotals = useMemo(() => {
     return sumNutrients(logs.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit)));
   }, [logs]);
+
+  const energyForSelectedDate = useMemo(() => {
+    if (!profileCal || !profileBmrFieldsComplete(profileCal)) return null;
+    return computeBmrTdeeForDate(profileCal, weights, selectedDate);
+  }, [profileCal, weights, selectedDate]);
+
+  const currentWeightKgForDate = useMemo(() => {
+    const eligible = weights.filter((w) => w.logged_date <= selectedDate);
+    if (eligible.length === 0) return null;
+    eligible.sort((a, b) => b.logged_date.localeCompare(a.logged_date));
+    return Number(eligible[0].weight_kg);
+  }, [weights, selectedDate]);
+
+  const calorieContext = useMemo((): NutritionCalorieContext | null => {
+    if (!userId) return null;
+    return {
+      tdee: energyForSelectedDate?.tdee ?? null,
+      additionalBurns,
+      weightGoal,
+      currentWeightKg: currentWeightKgForDate,
+      selectedDate,
+    };
+  }, [userId, energyForSelectedDate?.tdee, additionalBurns, weightGoal, currentWeightKgForDate, selectedDate]);
+
+  const effectiveCalorieTarget = useMemo(() => {
+    if (!goal) return 0;
+    const mode = nutritionCalorieMode(goal);
+    const tdee = energyForSelectedDate?.tdee ?? 0;
+    if (mode === "dynamic" && tdee > 0) {
+      return getDynamicCaloricTarget({
+        TDEE: tdee,
+        additionalBurns,
+        activeWeightGoal:
+          weightGoal && isActiveLossWeightGoal(weightGoal, currentWeightKgForDate) ? weightGoal : null,
+        currentWeightKg: currentWeightKgForDate,
+        nutritionGoal: goal,
+      });
+    }
+    return Number(goal.daily_calories);
+  }, [goal, energyForSelectedDate?.tdee, additionalBurns, weightGoal, currentWeightKgForDate]);
+
+  const dynamicSummaryTooltip = useMemo(() => {
+    if (!goal || nutritionCalorieMode(goal) !== "dynamic") return null;
+    const tdee = energyForSelectedDate?.tdee ?? 0;
+    if (tdee <= 0) {
+      return "Add a weight entry on or before this date and complete your profile (height, age, sex, activity) to compute TDEE. Until then, your static daily calorie value is used for the bar.";
+    }
+    const parts = [`TDEE ${formatKcal(tdee)} kcal`, `extra burns ${formatKcal(additionalBurns)} kcal`];
+    const lossGoal =
+      weightGoal && isActiveLossWeightGoal(weightGoal, currentWeightKgForDate) ? weightGoal : null;
+    if (lossGoal && currentWeightKgForDate != null) {
+      parts.push(`weight-goal deficit applied (3500 kcal/lb/week rule)`);
+    } else {
+      parts.push(`manual offset ${formatKcal(Number(goal.daily_deficit_surplus ?? 0))} kcal`);
+    }
+    return `Today's target = ${parts.join(" + ")} (see Calories page for full breakdown).`;
+  }, [
+    goal,
+    energyForSelectedDate?.tdee,
+    additionalBurns,
+    weightGoal,
+    currentWeightKgForDate,
+  ]);
 
   const dayMacroPct = useMemo(
     () =>
@@ -178,6 +319,8 @@ export default function FoodLogPage() {
         protein_pct: payload.protein_pct,
         carbs_pct: payload.carbs_pct,
         fat_pct: payload.fat_pct,
+        calorie_mode: payload.calorie_mode,
+        daily_deficit_surplus: payload.daily_deficit_surplus,
       },
       { onConflict: "user_id" }
     );
@@ -258,6 +401,7 @@ export default function FoodLogPage() {
               saving={goalSaving}
               onSave={(p) => void saveGoal(p)}
               onCancel={goal ? () => setGoalEditing(false) : undefined}
+              calorieContext={calorieContext ?? undefined}
             />
           ) : (
             <NutritionGoalSetup
@@ -269,6 +413,7 @@ export default function FoodLogPage() {
                 setGoalFormKey((k) => k + 1);
                 setGoalEditing(true);
               }}
+              calorieContext={calorieContext ?? undefined}
             />
           )}
         </section>
@@ -301,7 +446,12 @@ export default function FoodLogPage() {
 
         {goal && (
           <div className="mt-6">
-            <DailyNutritionSummary totals={dayTotals} goal={goal} />
+            <DailyNutritionSummary
+              totals={dayTotals}
+              goal={goal}
+              effectiveCalorieTarget={effectiveCalorieTarget}
+              dynamicTooltip={dynamicSummaryTooltip}
+            />
           </div>
         )}
 

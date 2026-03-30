@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { NutritionGoal } from "@/types";
+import type { NutritionCalorieMode, NutritionGoal } from "@/types";
 import { formatKcal, goalMacroGrams } from "@/lib/food-helpers";
 
 type Totals = { calories: number; protein_g: number; carbs_g: number; fat_g: number };
@@ -44,14 +44,19 @@ function MiniBar({
 export function DashboardFoodWidget({
   goal,
   totals,
+  effectiveCalorieTarget,
+  calorieMode,
 }: {
   goal: NutritionGoal;
   totals: Totals;
+  effectiveCalorieTarget: number;
+  calorieMode: NutritionCalorieMode;
 }) {
-  const calGoal = Number(goal.daily_calories);
-  const g = goalMacroGrams(goal);
+  const calGoal = Number(effectiveCalorieTarget);
+  const g = goalMacroGrams({ ...goal, daily_calories: calGoal });
   const calOver = totals.calories > calGoal + 0.5;
   const calPct = calGoal > 0 ? Math.min(100, (totals.calories / calGoal) * 100) : 0;
+  const modeLabel = calorieMode === "dynamic" ? "dynamic" : "static";
 
   return (
     <Link
@@ -64,6 +69,9 @@ export function DashboardFoodWidget({
           <p className={`mt-2 text-2xl font-bold tabular-nums ${calOver ? "text-theme-danger" : "text-theme-text-primary"}`}>
             {formatKcal(totals.calories)}{" "}
             <span className="text-base font-semibold text-theme-text-muted">/ {formatKcal(calGoal)} kcal</span>
+          </p>
+          <p className="mt-1 text-xs font-medium text-theme-text-muted">
+            Target: {formatKcal(calGoal)} kcal ({modeLabel})
           </p>
         </div>
       </div>

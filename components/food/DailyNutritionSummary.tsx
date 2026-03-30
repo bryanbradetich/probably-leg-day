@@ -2,6 +2,7 @@
 
 import type { NutritionGoal } from "@/types";
 import { formatKcal, goalMacroGrams, macroCaloriePercents } from "@/lib/food-helpers";
+import { nutritionCalorieMode } from "@/lib/calories";
 
 type Totals = { calories: number; protein_g: number; carbs_g: number; fat_g: number };
 
@@ -48,12 +49,20 @@ function Bar({
 export function DailyNutritionSummary({
   totals,
   goal,
+  effectiveCalorieTarget,
+  dynamicTooltip,
 }: {
   totals: Totals;
   goal: NutritionGoal;
+  /** Calorie bar target (static daily_calories or computed dynamic). */
+  effectiveCalorieTarget: number;
+  /** Shown when mode is dynamic; plain-language explanation of the target. */
+  dynamicTooltip?: string | null;
 }) {
-  const calGoal = Number(goal.daily_calories);
-  const g = goalMacroGrams(goal);
+  const mode = nutritionCalorieMode(goal);
+  const isDynamic = mode === "dynamic";
+  const calGoal = Number(effectiveCalorieTarget);
+  const g = goalMacroGrams({ ...goal, daily_calories: calGoal });
   const calOver = totals.calories > calGoal + 0.5;
   const calPct = calGoal > 0 ? Math.min(100, (totals.calories / calGoal) * 100) : 0;
   const remaining = calGoal - totals.calories;
@@ -72,18 +81,36 @@ export function DailyNutritionSummary({
       <div>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span className="text-sm font-bold uppercase tracking-wide text-theme-text-muted">Calories</span>
-          <span className={`text-lg font-bold tabular-nums sm:text-xl ${calOver ? "text-theme-danger" : "text-theme-text-primary"}`}>
-            {formatKcal(totals.calories)} / {formatKcal(calGoal)} kcal
-            {!calOver && remaining >= 0 && (
-              <span className="ml-2 text-base font-bold text-theme-text-muted">· {formatKcal(remaining)} remaining</span>
-            )}
-            {calOver && (
-              <span className="ml-2 text-base font-bold text-theme-danger">
-                · {formatKcal(totals.calories - calGoal)} over goal
+          <span className="flex flex-wrap items-center gap-2">
+            <span
+              className={`text-lg font-bold tabular-nums sm:text-xl ${calOver ? "text-theme-danger" : "text-theme-text-primary"}`}
+            >
+              {formatKcal(totals.calories)} / {formatKcal(calGoal)} kcal
+              {!calOver && remaining >= 0 && (
+                <span className="ml-2 text-base font-bold text-theme-text-muted">· {formatKcal(remaining)} remaining</span>
+              )}
+              {calOver && (
+                <span className="ml-2 text-base font-bold text-theme-danger">
+                  · {formatKcal(totals.calories - calGoal)} over goal
+                </span>
+              )}
+            </span>
+            {isDynamic && dynamicTooltip ? (
+              <span
+                className="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full border text-xs font-bold text-theme-text-muted"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
+                title={dynamicTooltip}
+              >
+                i
               </span>
-            )}
+            ) : null}
           </span>
         </div>
+        <p className="mt-1 text-xs font-medium text-theme-text-muted">
+          {isDynamic
+            ? `Target: ${formatKcal(calGoal)} kcal (based on today's burns + weight goal)`
+            : `Target: ${formatKcal(calGoal)} kcal (static daily goal)`}
+        </p>
         <div className="mt-2 h-5 w-full overflow-hidden rounded-md bg-theme-border/90">
           <div
             className="h-full rounded-md transition-all"

@@ -24,14 +24,28 @@ import { LogActivitySlideOver } from "@/components/calories/LogActivitySlideOver
 import { kgToLbs } from "@/lib/units";
 import { scaledNutrients, sumNutrients, formatKcal } from "@/lib/food-helpers";
 import { localISODate, parseISODate } from "@/lib/weight-helpers";
-import type { CalorieBurn, DailyFoodLogWithFood, DailyWeight, NutritionGoal, ProfileCalorieFields } from "@/types";
+import type {
+  CalorieBurn,
+  DailyFoodLogWithFood,
+  DailyWeight,
+  NutritionGoal,
+  ProfileCalorieFields,
+  WeightGoal,
+} from "@/types";
 import {
   activityLevelLabel,
   computeBmrTdeeForDate,
   lastNDatesInclusive,
-  netCalorieToneClass,
   profileBmrFieldsComplete,
+  weightForDate,
 } from "@/lib/calorie-helpers";
+import {
+  calculateDailyDeficit,
+  getDynamicCaloricTarget,
+  isActiveLossWeightGoal,
+  nutritionCalorieMode,
+  weeklyLossLbsFromWeightGoal,
+} from "@/lib/calories";
 
 const QUICK_ACTIVITIES = ["Walking", "Running", "Cycling", "Swimming", "HIIT"] as const;
 
@@ -45,6 +59,7 @@ export default function CaloriesPage() {
   const [profile, setProfile] = useState<ProfileCalorieFields | null>(null);
   const [weights, setWeights] = useState<DailyWeight[]>([]);
   const [nutritionGoal, setNutritionGoal] = useState<NutritionGoal | null>(null);
+  const [weightGoal, setWeightGoal] = useState<WeightGoal | null>(null);
   const [foodRows, setFoodRows] = useState<DailyFoodLogWithFood[]>([]);
   const [burnRows, setBurnRows] = useState<CalorieBurn[]>([]);
   const [weekSeries, setWeekSeries] = useState<
@@ -92,6 +107,9 @@ export default function CaloriesPage() {
     const { data: ng } = await supabase.from("nutrition_goals").select("*").eq("user_id", user.id).maybeSingle();
     setNutritionGoal(ng as NutritionGoal | null);
 
+    const { data: wgRow } = await supabase.from("weight_goals").select("*").eq("user_id", user.id).maybeSingle();
+    setWeightGoal((wgRow ?? null) as WeightGoal | null);
+
     const { data: food } = await supabase
       .from("daily_food_logs")
       .select("*, foods(*)")
@@ -132,7 +150,7 @@ export default function CaloriesPage() {
       burnsByDate[d].push(b);
     }
 
-    const goalCal = ng ? Number((ng as NutritionGoal).daily_calories) : null;
+    const wg = (wgRow ?? null) as WeightGoal | null;
     const series: { date: string; label: string; net: number; targetNet: number | null }[] = [];
     if (fullProfile && profileBmrFieldsComplete(fullProfile)) {
       for (const d of range) {
@@ -143,8 +161,21 @@ export default function CaloriesPage() {
         const extra = (burnsByDate[d] ?? []).reduce((s, x) => s + Number(x.calories_burned), 0);
         const tdee = meta?.tdee ?? 0;
         const net = meta ? cin - (tdee + extra) : 0;
-        const targetNet =
-          meta != null && goalCal != null && Number.isFinite(goalCal) ? goalCal - (tdee + extra) : null;
+        const wkg = weightForDate(wlist, d)?.weightKg ?? null;
+        const lossActive = wg && isActiveLossWeightGoal(wg, wkg) ? wg : null;
+        let targetNet: number | null = null;
+        if (meta != null && ng) {
+          const targetCal = getDynamicCaloricTarget({
+            TDEE: meta.tdee,
+            additionalBurns: extra,
+            activeWeightGoal: lossActive,
+            currentWeightKg: wkg,
+            nutritionGoal: ng as NutritionGoal,
+          });
+          if (Number.isFinite(targetCal)) {
+            targetNet = targetCal - (meta.tdee + extra);
+          }
+        }
         const dt = parseISODate(d);
         const label = dt.toLocaleDateString(undefined, { weekday: "short", month: "numeric", day: "numeric" });
         series.push({ date: d, label, net, targetNet });
@@ -195,9 +226,32 @@ export default function CaloriesPage() {
   const tdee = energy?.tdee ?? 0;
   const totalBurned = tdee + additionalBurns;
   const net = caloriesIn - totalBurned;
-  const netTone = netCalorieToneClass(net);
   const netColorClass =
-    netTone === "success" ? "text-theme-success" : netTone === "warning" ? "text-theme-warning" : "text-theme-danger";
+    net < 0 ? "text-theme-success" : net > 0 ? "text-theme-warning" : "text-theme-text-muted";
+
+  const currentWeightKg = useMemo(
+    () => weightForDate(weights, selectedDate)?.weightKg ?? null,
+    [weights, selectedDate]
+  );
+  const activeLossGoal = useMemo(
+    () =>
+      weightGoal && isActiveLossWeightGoal(weightGoal, currentWeightKg) ? weightGoal : null,
+    [weightGoal, currentWeightKg]
+  );
+  const calorieTargetToday = useMemo(() => {
+    if (!nutritionGoal || !energy) return null;
+    return getDynamicCaloricTarget({
+      TDEE: energy.tdee,
+      additionalBurns,
+      activeWeightGoal: activeLossGoal,
+      currentWeightKg,
+      nutritionGoal,
+    });
+  }, [nutritionGoal, energy, additionalBurns, activeLossGoal, currentWeightKg]);
+  const weightGoalDeficitDaily = useMemo(() => {
+    if (!activeLossGoal) return null;
+    return calculateDailyDeficit(weeklyLossLbsFromWeightGoal(activeLossGoal, currentWeightKg));
+  }, [activeLossGoal, currentWeightKg]);
 
   const deleteBurn = async (id: string) => {
     if (!user) return;
@@ -290,25 +344,7 @@ export default function CaloriesPage() {
                 </div>
               </div>
 
-              <div className="mt-8 text-center sm:text-left">
-                <p className="text-sm font-medium text-theme-text-muted">Net calories</p>
-                <p className={`mt-1 text-5xl font-bold tabular-nums ${netColorClass}`}>
-                  {net >= 0 ? "+" : ""}
-                  {formatKcal(net)} kcal
-                </p>
-                <p className="mt-2 text-xs text-theme-text-muted">
-                  Green: surplus at most 200 kcal · Yellow: 201–500 kcal over · Red: more than 500 kcal over (vs neutral
-                  balance).
-                </p>
-              </div>
-
               <dl className="mt-8 grid gap-3 text-sm sm:grid-cols-2">
-                <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
-                  <dt className="text-theme-text-muted">Calories in</dt>
-                  <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
-                    {formatKcal(caloriesIn)} kcal
-                  </dd>
-                </div>
                 <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
                   <dt className="text-theme-text-muted">BMR</dt>
                   <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
@@ -316,13 +352,19 @@ export default function CaloriesPage() {
                   </dd>
                 </div>
                 <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
-                  <dt className="text-theme-text-muted">TDEE (BMR × activity)</dt>
+                  <dt className="text-theme-text-muted">Activity multiplier</dt>
+                  <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
+                    {energy.multiplier}× <span className="text-sm font-normal text-theme-text-muted">({activityLevelLabel(profile!.activity_level)})</span>
+                  </dd>
+                </div>
+                <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
+                  <dt className="text-theme-text-muted">TDEE</dt>
                   <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
                     {formatKcal(tdee)} kcal
                   </dd>
                 </div>
                 <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
-                  <dt className="text-theme-text-muted">Additional burns (logged)</dt>
+                  <dt className="text-theme-text-muted">Extra burns today</dt>
                   <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
                     {formatKcal(additionalBurns)} kcal
                   </dd>
@@ -331,10 +373,54 @@ export default function CaloriesPage() {
                   className="rounded-lg border border-theme-border p-3 sm:col-span-2"
                   style={{ backgroundColor: "var(--bg)" }}
                 >
-                  <dt className="text-theme-text-muted">Total calories burned (TDEE + additional)</dt>
-                  <dd className="mt-1 text-xl font-bold tabular-nums text-theme-text-primary">
+                  <dt className="text-theme-text-muted">Total burn</dt>
+                  <dd className="mt-1 text-lg font-bold tabular-nums text-theme-text-primary">
                     {formatKcal(totalBurned)} kcal
                   </dd>
+                </div>
+                {weightGoalDeficitDaily != null && (
+                  <div
+                    className="rounded-lg border border-theme-border p-3 sm:col-span-2"
+                    style={{ backgroundColor: "var(--bg)" }}
+                  >
+                    <dt className="text-theme-text-muted">Weight goal deficit</dt>
+                    <dd
+                      className="mt-1 text-lg font-semibold tabular-nums"
+                      style={{
+                        color: weightGoalDeficitDaily < 0 ? "var(--success)" : "var(--warning)",
+                      }}
+                    >
+                      {formatKcal(weightGoalDeficitDaily)} kcal
+                    </dd>
+                  </div>
+                )}
+                {nutritionGoal && calorieTargetToday != null && Number.isFinite(calorieTargetToday) && (
+                  <div
+                    className="rounded-lg border border-theme-border p-3 sm:col-span-2"
+                    style={{ backgroundColor: "var(--bg)" }}
+                  >
+                    <dt className="text-theme-text-muted">
+                      Calorie target for today{" "}
+                      <span className="font-normal">({nutritionCalorieMode(nutritionGoal) === "dynamic" ? "dynamic" : "static"})</span>
+                    </dt>
+                    <dd className="mt-1 text-2xl font-bold tabular-nums text-theme-text-primary">{formatKcal(calorieTargetToday)} kcal</dd>
+                  </div>
+                )}
+                <div className="rounded-lg border border-theme-border p-3" style={{ backgroundColor: "var(--bg)" }}>
+                  <dt className="text-theme-text-muted">Calories consumed</dt>
+                  <dd className="mt-1 text-lg font-semibold tabular-nums text-theme-text-primary">
+                    {formatKcal(caloriesIn)} kcal
+                  </dd>
+                </div>
+                <div className="rounded-lg border border-theme-border p-3 sm:col-span-2" style={{ backgroundColor: "var(--bg)" }}>
+                  <dt className="text-theme-text-muted">Net (in − total burn)</dt>
+                  <dd className={`mt-1 text-2xl font-bold tabular-nums ${netColorClass}`}>
+                    {net > 0 ? "+" : ""}
+                    {formatKcal(net)} kcal
+                  </dd>
+                  <p className="mt-2 text-xs text-theme-text-muted">
+                    Green = net deficit (burned more than you logged eating). Orange = net surplus.
+                  </p>
                 </div>
               </dl>
             </section>
@@ -404,13 +490,12 @@ export default function CaloriesPage() {
               <h2 className="text-lg font-semibold text-theme-text-primary">Weekly overview</h2>
               <p className="mt-1 text-sm text-theme-text-muted">
                 Net calories for the 7 days ending on the selected date. Bars:{" "}
-                <span style={{ color: "var(--accent)" }}>orange</span> = net deficit,{" "}
-                <span style={{ color: "var(--danger)" }}>red</span> = net surplus. Gray dashed: 0 kcal (energy balance).
+                <span style={{ color: "var(--success)" }}>green</span> = net deficit,{" "}
+                <span style={{ color: "var(--warning)" }}>orange</span> = net surplus. Gray dashed: 0 kcal (energy balance).
                 {nutritionGoal ? (
                   <>
                     {" "}
-                    Gray line: net you would have at your{" "}
-                    {formatKcal(nutritionGoal.daily_calories)} kcal/day intake goal (same burn per day).
+                    Gray line: net if you ate exactly your daily calorie target (static or dynamic per that day).
                   </>
                 ) : null}
               </p>
@@ -439,7 +524,7 @@ export default function CaloriesPage() {
                           stroke="var(--chart-secondary)"
                           strokeWidth={2}
                           dot={{ r: 3, fill: "var(--chart-secondary)" }}
-                          name="Net at intake goal"
+                          name="Net at calorie target"
                           connectNulls
                         />
                       ) : null}
@@ -447,7 +532,9 @@ export default function CaloriesPage() {
                         {weekSeries.map((entry) => (
                           <Cell
                             key={entry.date}
-                            fill={entry.net < 0 ? "var(--accent)" : entry.net > 0 ? "var(--danger)" : "var(--success)"}
+                            fill={
+                              entry.net < 0 ? "var(--success)" : entry.net > 0 ? "var(--warning)" : "var(--text-muted)"
+                            }
                           />
                         ))}
                       </Bar>
@@ -461,33 +548,14 @@ export default function CaloriesPage() {
               className="mt-8 rounded-xl border border-theme-border p-5 sm:p-6"
               style={{ backgroundColor: "var(--surface)" }}
             >
-              <h2 className="text-lg font-semibold text-theme-text-primary">BMR &amp; TDEE breakdown</h2>
-              <ul className="mt-4 space-y-3 text-sm text-theme-text-primary">
-                <li>
-                  Your BMR: <strong className="tabular-nums">{formatKcal(energy.bmr)} kcal</strong> (calories your body
-                  burns at rest)
-                </li>
-                <li>
-                  Activity multiplier: <strong>{energy.multiplier}×</strong> ({activityLevelLabel(profile!.activity_level)})
-                </li>
-                <li>
-                  Your TDEE: <strong className="tabular-nums">{formatKcal(energy.tdee)} kcal</strong> (estimated daily
-                  burn without extra logged exercise)
-                </li>
-                <li>
-                  Additional burns today: <strong className="tabular-nums">{formatKcal(additionalBurns)} kcal</strong>
-                </li>
-                <li>
-                  Total estimated burn: <strong className="tabular-nums">{formatKcal(totalBurned)} kcal</strong>
-                </li>
-              </ul>
-              <p className="mt-4 text-sm text-theme-text-muted">
+              <h2 className="text-lg font-semibold text-theme-text-primary">About these estimates</h2>
+              <p className="mt-3 text-sm text-theme-text-muted">
                 <Link href="/profile" className="font-medium text-theme-accent hover:underline">
                   Update activity level on Profile
                 </Link>
               </p>
               <p className="mt-2 text-sm text-theme-text-muted">
-                Weight used for calculation:{" "}
+                Weight used for BMR/TDEE:{" "}
                 <strong className="text-theme-text-primary">
                   {kgToLbs(energy.weightKg)?.toFixed(1) ?? "—"} lbs
                 </strong>{" "}

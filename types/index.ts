@@ -201,6 +201,8 @@ export interface DailyFoodLog {
   created_at: string;
 }
 
+export type NutritionCalorieMode = "static" | "dynamic";
+
 export interface NutritionGoal {
   id: string;
   user_id: string;
@@ -208,6 +210,10 @@ export interface NutritionGoal {
   protein_pct: number;
   carbs_pct: number;
   fat_pct: number;
+  /** static: daily_calories; dynamic: computed from TDEE, burns, weight goal or daily_deficit_surplus */
+  calorie_mode?: NutritionCalorieMode;
+  /** Used when calorie_mode is dynamic and there is no active weight goal; kcal added to TDEE + burns */
+  daily_deficit_surplus?: number;
   created_at: string;
   updated_at: string;
 }

@@ -17,11 +17,19 @@ import {
   mondayOfWeek,
   sundayOfWeekFromMonday,
 } from "@/lib/weight-helpers";
-import type { DailyFoodLogWithFood, DailyWeight, NutritionGoal, ProfileCalorieFields, WeightGoal } from "@/types";
+import type {
+  DailyFoodLogWithFood,
+  DailyWeight,
+  NutritionCalorieMode,
+  NutritionGoal,
+  ProfileCalorieFields,
+  WeightGoal,
+} from "@/types";
 import { DashboardFoodWidget } from "@/components/food/DashboardFoodWidget";
 import { DashboardCalorieWidget } from "@/components/calories/DashboardCalorieWidget";
 import { scaledNutrients, sumNutrients } from "@/lib/food-helpers";
-import { computeBmrTdeeForDate, profileBmrFieldsComplete } from "@/lib/calorie-helpers";
+import { computeBmrTdeeForDate, profileBmrFieldsComplete, weightForDate } from "@/lib/calorie-helpers";
+import { getDynamicCaloricTarget, isActiveLossWeightGoal, nutritionCalorieMode } from "@/lib/calories";
 import { useTheme } from "@/components/ThemeProvider";
 
 type WeightWidget = {
@@ -48,6 +56,8 @@ export default function DashboardPage() {
     carbs_g: number;
     fat_g: number;
   } | null>(null);
+  const [foodCalorieTarget, setFoodCalorieTarget] = useState<number | null>(null);
+  const [foodCalorieMode, setFoodCalorieMode] = useState<NutritionCalorieMode>("static");
   const [calorieBalance, setCalorieBalance] = useState<{ in: number; out: number } | null>(null);
 
   useEffect(() => {
@@ -197,11 +207,16 @@ export default function DashboardPage() {
         .eq("user_id", u.id)
         .maybeSingle();
       if (ng) {
-        setNutritionGoal(ng as NutritionGoal);
+        const goalRow = ng as NutritionGoal;
+        const mode = nutritionCalorieMode(goalRow);
+        setNutritionGoal(goalRow);
         setFoodTotalsToday(foodTotals);
+        setFoodCalorieMode(mode);
+        setFoodCalorieTarget(Number(goalRow.daily_calories));
       } else {
         setNutritionGoal(null);
         setFoodTotalsToday(null);
+        setFoodCalorieTarget(null);
       }
 
       const { data: prof } = await supabase
@@ -233,6 +248,25 @@ export default function DashboardPage() {
             .eq("logged_date", todayFood);
           const extra = (burnToday ?? []).reduce((s, r) => s + Number((r as { calories_burned: number }).calories_burned), 0);
           calBal = { in: foodTotals.calories, out: energy.tdee + extra };
+
+          const ngRow = ng as NutritionGoal | null;
+          if (ngRow && nutritionCalorieMode(ngRow) === "dynamic" && energy.tdee > 0) {
+            const wg = wgErr ? null : (wgRow as WeightGoal | null);
+            const curKg = weightForDate(wList, todayFood)?.weightKg ?? null;
+            const lossActive = wg && isActiveLossWeightGoal(wg, curKg) ? wg : null;
+            const dyn = getDynamicCaloricTarget({
+              TDEE: energy.tdee,
+              additionalBurns: extra,
+              activeWeightGoal: lossActive,
+              currentWeightKg: curKg,
+              nutritionGoal: ngRow,
+            });
+            setFoodCalorieTarget(dyn);
+            setFoodCalorieMode("dynamic");
+          } else if (ngRow) {
+            setFoodCalorieTarget(Number(ngRow.daily_calories));
+            setFoodCalorieMode(nutritionCalorieMode(ngRow));
+          }
         }
       }
       setCalorieBalance(calBal);
@@ -287,8 +321,13 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {nutritionGoal && foodTotalsToday && (
-          <DashboardFoodWidget goal={nutritionGoal} totals={foodTotalsToday} />
+        {nutritionGoal && foodTotalsToday && foodCalorieTarget != null && (
+          <DashboardFoodWidget
+            goal={nutritionGoal}
+            totals={foodTotalsToday}
+            effectiveCalorieTarget={foodCalorieTarget}
+            calorieMode={foodCalorieMode}
+          />
         )}
 
         {calorieBalance && (
