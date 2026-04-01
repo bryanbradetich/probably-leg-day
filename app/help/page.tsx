@@ -130,6 +130,8 @@ export default function HelpPage() {
         "The Exercise Library",
         "Creating Workout Templates",
         "Logging a Workout",
+        "Removing an Exercise During Logging",
+        "Logging Sets Per Side",
         "Editing and Deleting Workouts",
         "Comparing Workouts",
       ].join(" "),
@@ -191,7 +193,7 @@ export default function HelpPage() {
           id: "section-2-logging-a-workout",
           title: "Logging a Workout",
           searchText:
-            "Logging a Workout Go to Workouts → Log Workout to start a session Starting a workout Choose Start from template pre-load planned exercises and targets Or Start empty workout build freely Optionally link the workout to an active mesocycle During the workout target from the template last 2-3 sessions reps and weight lbs duration timed exercises optional RPE Rate of Perceived Exertion 1-10 dumbbell per hand total weight timer rest timer auto-saves draft navigate away browser crashes saved Finishing a workout Tap Finish Workout checks new personal records max weight max reps max volume max duration post-workout summary total duration sets volume new PRs",
+            "Logging a Workout Go to Workouts → Log Workout to start a session Starting a workout Choose Start from template pre-load planned exercises and targets Or Start empty workout build freely Optionally link the workout to an active mesocycle During the workout target from the template last 2-3 sessions reps and weight lbs duration timed exercises optional RPE Rate of Perceived Exertion 1-10 dumbbell cable log per side left right timer rest timer auto-saves draft navigate away browser crashes saved Finishing a workout Tap Finish Workout checks new personal records max weight max reps max volume max duration post-workout summary total duration sets volume new PRs",
           content: (
             <div className="space-y-3">
               <p className="leading-7">Go to Workouts → Log Workout to start a session.</p>
@@ -210,7 +212,10 @@ export default function HelpPage() {
                 </li>
                 <li>Log each set with reps and weight (in lbs) or duration for timed exercises</li>
                 <li>Add an optional RPE (Rate of Perceived Exertion, 1-10) per set</li>
-                <li>For dumbbell exercises you can toggle between "per hand" and "total weight"</li>
+                <li>
+                  For dumbbell and cable exercises you can use &quot;Log per side&quot; for separate left and
+                  right weights — see Logging Sets Per Side below
+                </li>
                 <li>A running timer shows how long your workout has been going</li>
                 <li>A rest timer appears after each set based on your template's rest target</li>
                 <li>
@@ -227,6 +232,35 @@ export default function HelpPage() {
                 </li>
                 <li>A post-workout summary shows your total duration, sets, volume, and any new PRs</li>
               </ul>
+            </div>
+          ),
+        },
+        {
+          id: "section-2-removing-an-exercise-during-logging",
+          title: "Removing an Exercise During Logging",
+          searchText:
+            "Removing an Exercise During Logging wrong exercise trash icon exercise header confirmation prompt remove exercise deletes all sets current workout",
+          content: (
+            <p className="leading-7">
+              If you accidentally add the wrong exercise during a workout, tap the trash icon in the exercise
+              header to remove it. A confirmation prompt will appear. Removing an exercise deletes all its sets
+              from the current workout.
+            </p>
+          ),
+        },
+        {
+          id: "section-2-logging-sets-per-side",
+          title: "Logging Sets Per Side (Dumbbell & Cable Exercises)",
+          searchText:
+            "Logging Sets Per Side dumbbell cable Log per side toggle Left Right weight strength imbalances PR detection higher side workout history L R badge",
+          content: (
+            <div className="space-y-3">
+              <p className="leading-7">
+                For dumbbell and cable exercises, a &quot;Log per side&quot; toggle appears below the exercise
+                name. When enabled, each set shows separate Left and Right weight inputs so you can track any
+                strength imbalances between sides. The higher of the two sides is used for PR detection. In
+                workout history, sets logged per side show an L or R badge next to the weight.
+              </p>
             </div>
           ),
         },
@@ -349,7 +383,10 @@ export default function HelpPage() {
         "Setting Up Your Nutrition Goal",
         "The Food Library",
         "Logging Food",
+        "Macro Percentages Per Meal",
+        "Default Quantities When Adding Food",
         "Meal Templates",
+        "Creating a Meal Template from a Past Log",
         "Weekly Nutrition Summary",
       ].join(" "),
       items: [
@@ -418,7 +455,6 @@ export default function HelpPage() {
                 <li>Use the "Add Food" button to open the food picker and search the library</li>
                 <li>Use the Quick Add search bar for fast inline adding</li>
                 <li>Use "Add Meal Template" to log all foods from a saved template at once</li>
-                <li>When you add a food you've logged before, the quantity defaults to the last amount you used</li>
               </ul>
               <p className="leading-7">
                 The daily summary bar at the top shows your calories consumed vs target, remaining calories, and
@@ -428,22 +464,61 @@ export default function HelpPage() {
           ),
         },
         {
+          id: "section-4-macro-percentages-per-meal",
+          title: "Macro Percentages Per Meal",
+          searchText:
+            "Macro Percentages Per Meal meal section header grams percentages protein carb fat kcal protein-heavy carb-heavy fat-heavy",
+          content: (
+            <p className="leading-7">
+              Each meal section header shows the macro breakdown in both grams and percentages — for example
+              &quot;586 kcal · P 21g (14%) · C 21g (14%) · F 50g (77%)&quot;. This helps you see at a glance
+              whether a meal is protein-heavy, carb-heavy, or fat-heavy without doing any math.
+            </p>
+          ),
+        },
+        {
+          id: "section-4-default-quantities-when-adding-food",
+          title: "Default Quantities When Adding Food",
+          searchText:
+            "Default Quantities When Adding Food quantity field pre-fills last amount logged before daily staples portions consistent",
+          content: (
+            <p className="leading-7">
+              When you add a food you&apos;ve logged before, the quantity field automatically pre-fills with the
+              last amount you used for that food. This saves time on daily staples where your portions are
+              consistent.
+            </p>
+          ),
+        },
+        {
           id: "section-4-meal-templates",
           title: "Meal Templates",
           searchText:
-            "Meal Templates Save frequently eaten meals as templates log quickly create template Food → Meal Templates → New Template build manually Or Create from Log turn past meal into a template pick the date and meal slot and save",
+            "Meal Templates Save frequently eaten meals as templates log quickly create template Food → Meal Templates → New Template build manually",
           content: (
             <div className="space-y-3">
               <p className="leading-7">Save frequently eaten meals as templates to log them quickly.</p>
-              <p className="leading-7">To create a template:</p>
+              <p className="leading-7">To create a template manually:</p>
               <ul className="list-disc space-y-1 pl-5 leading-7">
-                <li>Go to Food → Meal Templates → New Template and build it manually</li>
-                <li>
-                  Or click "Create from Log" to turn a past meal into a template — pick the date and meal slot
-                  and save
-                </li>
+                <li>Go to Food → Meal Templates → New Template and build it item by item</li>
               </ul>
+              <p className="leading-7">
+                You can also turn a past log into a template — see Creating a Meal Template from a Past Log
+                below.
+              </p>
             </div>
+          ),
+        },
+        {
+          id: "section-4-creating-meal-template-from-log",
+          title: "Creating a Meal Template from a Past Log",
+          searchText:
+            "Creating a Meal Template from a Past Log Meal Templates Create from Log date meal slot name save foods quantities template",
+          content: (
+            <p className="leading-7">
+              On the Meal Templates page, click &quot;Create from Log&quot; to turn any past meal into a reusable
+              template. Select the date and meal slot, give it a name, and save. All foods and quantities from
+              that meal are saved to the template automatically.
+            </p>
           ),
         },
         {
@@ -535,6 +610,8 @@ export default function HelpPage() {
         "Section 6 — Calorie Burn & TDEE",
         "Understanding BMR and TDEE",
         "Logging Extra Burns",
+        "Editing Calorie Burns",
+        "Calorie Burn Estimator",
         "How Dynamic Calorie Targets Work",
       ].join(" "),
       items: [
@@ -568,6 +645,46 @@ export default function HelpPage() {
               </ul>
               <p className="leading-7">
                 Use the quick-add buttons for common activities like Walking, Running, Cycling, Swimming, and HIIT.
+              </p>
+            </div>
+          ),
+        },
+        {
+          id: "section-6-editing-calorie-burns",
+          title: "Editing Calorie Burns",
+          searchText:
+            "Editing Calorie Burns Edit Delete logged activity update name duration calories walking steps distance dynamic calorie target recalculates saving",
+          content: (
+            <p className="leading-7">
+              Each logged activity has an Edit button alongside the Delete button. Tap Edit to update the
+              activity name, duration, or calories burned. This is useful for updating a walking entry throughout
+              the day as you accumulate more steps or distance. The dynamic calorie target recalculates
+              immediately after saving.
+            </p>
+          ),
+        },
+        {
+          id: "section-6-calorie-burn-estimator",
+          title: "Calorie Burn Estimator",
+          searchText:
+            "Calorie Burn Estimator searchable activity dropdown MET Calculate Estimate weight kg duration hours custom activity manual calories override recent activities",
+          content: (
+            <div className="space-y-3">
+              <p className="leading-7">
+                When logging an activity, use the searchable activity dropdown to select from a library of
+                common exercises and sports. Once you select an activity and enter a duration, tap
+                &quot;Calculate Estimate&quot; to get an estimated calorie burn based on your current weight
+                and the activity&apos;s MET (Metabolic Equivalent of Task) value.
+              </p>
+              <p className="leading-7">
+                The formula is: Calories = MET × your weight (kg) × duration (hours)
+              </p>
+              <p className="leading-7">
+                The dropdown shows your 5 most recently logged activities at the top for quick access. If you
+                type a custom activity not in the list, you can still log it but must enter calories manually.
+              </p>
+              <p className="leading-7">
+                You can always override the calculated estimate by typing your own value.
               </p>
             </div>
           ),
@@ -691,16 +808,26 @@ export default function HelpPage() {
     const section8: HelpSection = {
       id: "section-8",
       title: "Section 8 — Settings & Themes",
-      searchText: ["Section 8 — Settings & Themes", "Changing Your Theme"].join(" "),
+      searchText: [
+        "Section 8 — Settings & Themes",
+        "Changing Your Theme",
+        "Seattle Mariners",
+        "Las Vegas Raiders",
+        "Century High School",
+        "Winter Outdoors",
+        "Summer Outdoors",
+        "Rainbow",
+        "Year of the Fire Horse",
+      ].join(" "),
       items: [
         {
           id: "section-8-changing-your-theme",
           title: "Changing Your Theme",
           searchText:
-            "Changing Your Theme Settings → Themes 7 visual themes Dark & Bold Dark & Cool Dark & Purple Light & Clean High Contrast NY Mets Oregon Ducks theme saved account syncs across devices",
+            "Changing Your Theme Settings → Themes visual themes Dark Bold Cool Purple Light Clean High Contrast NY Mets Oregon Ducks Seattle Mariners Raiders Century Winter Summer Rainbow Fire Horse",
           content: (
             <div className="space-y-3">
-              <p className="leading-7">Go to Settings → Themes to choose from 7 visual themes:</p>
+              <p className="leading-7">Go to Settings → Themes to choose from these visual themes:</p>
               <ul className="list-disc space-y-1 pl-5 leading-7">
                 <li>Dark & Bold — the default dark theme with orange accents</li>
                 <li>Dark & Cool — dark theme with blue accents</li>
@@ -709,6 +836,14 @@ export default function HelpPage() {
                 <li>High Contrast — pure black and white</li>
                 <li>NY Mets — royal blue and orange</li>
                 <li>Oregon Ducks — dark green and gold</li>
+                <li>Seattle Mariners Classic ⚾ — navy and teal</li>
+                <li>Seattle Mariners Retro ⚾ — navy and gold</li>
+                <li>Las Vegas Raiders 🏴‍☠️ — black and silver</li>
+                <li>Century High School 🦅 — black and teal</li>
+                <li>Winter Outdoors ❄️ — midnight blue and icy silver</li>
+                <li>Summer Outdoors ☀️ — sandy tan and coral</li>
+                <li>Rainbow 🌈 — dark purple and magenta</li>
+                <li>Year of the Fire Horse 🐴 — deep red and gold</li>
               </ul>
               <p className="leading-7">Your theme is saved to your account and syncs across devices.</p>
             </div>
@@ -721,7 +856,7 @@ export default function HelpPage() {
       id: "faq",
       title: "FAQ",
       searchText:
-        "FAQ Why does my calorie target change every day? How is my estimated 1-rep max calculated? What's the difference between a workout template and a meal template? Can I use the app without setting a weight goal? What does RPE mean? Why does the app store weight in kg but show lbs? Can multiple users share the same account? How do I delete my account?",
+        "FAQ Why does my calorie target change every day? Why does my calorie target change throughout the day? How does the calorie burn estimator work? What does Log per side mean dumbbell? How is my estimated 1-rep max calculated? What's the difference between a workout template and a meal template? Can I use the app without setting a weight goal? What does RPE mean? Why does the app store weight in kg but show lbs? Can multiple users share the same account? How do I delete my account?",
       items: [
         {
           id: "faq-calorie-target-changes",
@@ -731,6 +866,47 @@ export default function HelpPage() {
           content: (
             <p className="leading-7">
               If you're using dynamic calorie mode with an active weight goal, your target adjusts based on what you burn that day. Log your activities in the Calories section and your food target updates automatically.
+            </p>
+          ),
+        },
+        {
+          id: "faq-calorie-target-throughout-day",
+          title: "Why does my calorie target change throughout the day?",
+          searchText:
+            "Why does my calorie target change throughout the day? dynamic calorie mode log activity burns edit calorie burn target recalculates TDEE extra burns weight goal deficit real time",
+          content: (
+            <p className="leading-7">
+              If you&apos;re in dynamic calorie mode, your target updates in real time as you log activity
+              burns. Every time you log or edit a calorie burn, the target recalculates: TDEE + today&apos;s
+              extra burns + your weight goal deficit. On high activity days you get a higher calorie budget
+              automatically.
+            </p>
+          ),
+        },
+        {
+          id: "faq-calorie-burn-estimator",
+          title: "How does the calorie burn estimator work?",
+          searchText:
+            "How does the calorie burn estimator work? MET Metabolic Equivalent Task formula Calories MET weight kg duration hours weight log override estimate",
+          content: (
+            <p className="leading-7">
+              The estimator uses MET (Metabolic Equivalent of Task) values — a standard measure of exercise
+              intensity. The formula is: Calories = MET × your weight in kg × duration in hours. Your weight
+              is pulled from your most recent weight log. The estimate is just that — an estimate. You can
+              always override it with your own value.
+            </p>
+          ),
+        },
+        {
+          id: "faq-log-per-side",
+          title: 'What does "Log per side" mean for dumbbell exercises?',
+          searchText:
+            "What does Log per side mean dumbbell exercises left right arm leg strength imbalance L R weight fields PR stronger side",
+          content: (
+            <p className="leading-7">
+              It means you can log separate weights for your left and right arm (or leg). This is useful if you
+              have a strength imbalance and want to track each side independently. When per-side logging is on,
+              each set shows L and R weight fields. PRs use the stronger side.
             </p>
           ),
         },

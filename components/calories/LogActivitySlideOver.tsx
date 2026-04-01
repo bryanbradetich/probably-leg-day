@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { localISODate } from "@/lib/weight-helpers";
+import { kgToLbs } from "@/lib/units";
+import {
+  estimateCaloriesFromMet,
+  findMetActivityByExactName,
+  metForExactActivityName,
+  type MetActivity,
+} from "@/lib/met-activities";
 import type { CalorieBurn } from "@/types";
+import { MetActivityCombobox } from "./MetActivityCombobox";
 
 type Props = {
   open: boolean;
@@ -13,6 +21,8 @@ type Props = {
   defaultDate?: string;
   editBurn?: CalorieBurn | null;
   onSaved: () => void;
+  /** Most recent `daily_weights.weight_kg` for MET estimate; null if none logged */
+  latestWeightKg: number | null;
 };
 
 export function LogActivitySlideOver({
@@ -23,6 +33,7 @@ export function LogActivitySlideOver({
   defaultDate,
   editBurn = null,
   onSaved,
+  latestWeightKg,
 }: Props) {
   const [activityName, setActivityName] = useState("");
   const [duration, setDuration] = useState("");
@@ -31,10 +42,52 @@ export function LogActivitySlideOver({
   const [loggedDate, setLoggedDate] = useState(localISODate());
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [calculateErr, setCalculateErr] = useState<string | null>(null);
+  const [estimateLine, setEstimateLine] = useState<string | null>(null);
+  const [recentActivities, setRecentActivities] = useState<
+    { name: string; metActivity: MetActivity | null }[]
+  >([]);
+
+  useEffect(() => {
+    if (!open || !userId) return;
+    let cancelled = false;
+    (async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("calorie_burns")
+        .select("activity_name")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (cancelled || error) return;
+      const seen = new Set<string>();
+      const ordered: string[] = [];
+      for (const row of data ?? []) {
+        const raw = row?.activity_name;
+        const n = typeof raw === "string" ? raw.trim() : "";
+        if (!n) continue;
+        const k = n.toLowerCase();
+        if (seen.has(k)) continue;
+        seen.add(k);
+        ordered.push(n);
+        if (ordered.length >= 5) break;
+      }
+      const items = ordered.map((name) => ({
+        name,
+        metActivity: findMetActivityByExactName(name),
+      }));
+      if (!cancelled) setRecentActivities(items);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, userId]);
 
   useEffect(() => {
     if (!open) return;
     setErr(null);
+    setCalculateErr(null);
+    setEstimateLine(null);
     if (editBurn) {
       setActivityName(editBurn.activity_name ?? "");
       setDuration(editBurn.duration_minutes == null ? "" : String(editBurn.duration_minutes));
@@ -50,7 +103,57 @@ export function LogActivitySlideOver({
     setLoggedDate(defaultDate ?? localISODate());
   }, [open, defaultActivityName, defaultDate, editBurn]);
 
-  if (!open) return null;
+  useEffect(() => {
+    if (!open) return;
+    setCalculateErr(null);
+    setEstimateLine(null);
+  }, [activityName, duration, open]);
+
+  const resolvedMet = useMemo(
+    () => metForExactActivityName(activityName),
+    [activityName]
+  );
+
+  const durationMinutesParsed = useMemo(() => {
+    const t = duration.trim();
+    if (t === "") return null;
+    const n = parseInt(t, 10);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return n;
+  }, [duration]);
+
+  const calculateEnabled = resolvedMet != null && durationMinutesParsed != null;
+
+  const calculateTooltip = calculateEnabled
+    ? undefined
+    : "Select an activity from the list and enter duration to calculate";
+
+  const runCalculate = () => {
+    if (resolvedMet == null) return;
+    if (durationMinutesParsed == null) {
+      setCalculateErr("Duration is required to calculate an estimate.");
+      return;
+    }
+    if (latestWeightKg == null || !Number.isFinite(latestWeightKg)) {
+      setCalculateErr(
+        "No weight logged — please log your weight first or enter calories manually"
+      );
+      return;
+    }
+    setCalculateErr(null);
+    const kcal = estimateCaloriesFromMet(
+      resolvedMet,
+      latestWeightKg,
+      durationMinutesParsed
+    );
+    const rounded = Math.round(kcal);
+    setCalories(String(rounded));
+    const lbs = kgToLbs(latestWeightKg);
+    const lbsStr = lbs != null ? `${lbs} lbs` : "—";
+    setEstimateLine(
+      `Estimated based on ${activityName.trim()} at MET ${resolvedMet} for ${durationMinutesParsed} min at ${lbsStr}`
+    );
+  };
 
   const submit = async () => {
     const name = activityName.trim();
@@ -90,9 +193,16 @@ export function LogActivitySlideOver({
     onClose();
   };
 
+  if (!open) return null;
+
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/60" aria-hidden onClick={onClose} />
+      <div
+        className="fixed inset-0 z-40"
+        style={{ backgroundColor: "color-mix(in srgb, var(--bg) 25%, black)" }}
+        aria-hidden
+        onClick={onClose}
+      />
       <div
         className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-theme-border shadow-xl"
         style={{ backgroundColor: "var(--surface)" }}
@@ -119,14 +229,17 @@ export function LogActivitySlideOver({
             </p>
           )}
           <label className="block text-sm font-medium text-theme-text-muted">Activity name</label>
-          <input
-            className="mt-1 w-full rounded-lg border border-theme-border px-3 py-2 text-theme-text-primary"
-            style={{ backgroundColor: "var(--input-bg)" }}
+          <MetActivityCombobox
             value={activityName}
-            onChange={(e) => setActivityName(e.target.value)}
-            placeholder="e.g. Morning run"
+            onChange={setActivityName}
+            recentItems={recentActivities}
           />
-          <label className="mt-4 block text-sm font-medium text-theme-text-muted">Duration (minutes, optional)</label>
+          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+            Select from list to enable calorie estimate, or type a custom activity
+          </p>
+          <label className="mt-4 block text-sm font-medium text-theme-text-muted">
+            Duration (minutes)
+          </label>
           <input
             type="number"
             min={0}
@@ -136,17 +249,56 @@ export function LogActivitySlideOver({
             onChange={(e) => setDuration(e.target.value)}
             placeholder="30"
           />
+          <p className="mt-1 text-xs" style={{ color: "var(--text-muted)" }}>
+            Required when using Calculate; optional if you enter calories manually
+          </p>
           <label className="mt-4 block text-sm font-medium text-theme-text-muted">Calories burned</label>
-          <input
-            type="number"
-            min={0}
-            step="1"
-            className="mt-1 w-full rounded-lg border border-theme-border px-3 py-2 text-theme-text-primary"
-            style={{ backgroundColor: "var(--input-bg)" }}
-            value={calories}
-            onChange={(e) => setCalories(e.target.value)}
-            placeholder="250"
-          />
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+            <input
+              type="number"
+              min={0}
+              step="1"
+              className="min-w-0 flex-1 rounded-lg border border-theme-border px-3 py-2 text-theme-text-primary"
+              style={{ backgroundColor: "var(--input-bg)" }}
+              value={calories}
+              onChange={(e) => setCalories(e.target.value)}
+              placeholder="250"
+            />
+            <span title={calculateTooltip} className="shrink-0 sm:self-auto">
+              <button
+                type="button"
+                disabled={!calculateEnabled}
+                onClick={runCalculate}
+                className="w-full rounded-lg px-3 py-2 text-sm font-semibold transition sm:w-auto sm:min-w-[9rem]"
+                style={
+                  calculateEnabled
+                    ? {
+                        backgroundColor: "var(--accent)",
+                        color: "var(--on-accent)",
+                      }
+                    : {
+                        backgroundColor: "transparent",
+                        color: "var(--text-muted)",
+                        opacity: 0.5,
+                        cursor: "not-allowed",
+                      }
+                }
+              >
+                Calculate estimate
+              </button>
+            </span>
+          </div>
+          {calculateErr && (
+            <p className="mt-2 text-sm text-theme-danger">{calculateErr}</p>
+          )}
+          {estimateLine && !calculateErr && (
+            <p
+              className="mt-2 text-sm italic"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {estimateLine}
+            </p>
+          )}
           <label className="mt-4 block text-sm font-medium text-theme-text-muted">Notes (optional)</label>
           <textarea
             className="mt-1 min-h-[72px] w-full rounded-lg border border-theme-border px-3 py-2 text-theme-text-primary"

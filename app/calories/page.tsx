@@ -234,6 +234,13 @@ export default function CaloriesPage() {
     () => weightForDate(weights, selectedDate)?.weightKg ?? null,
     [weights, selectedDate]
   );
+
+  /** Most recent weigh-in (MET calculator), independent of selected summary date */
+  const latestWeightKg = useMemo(() => {
+    if (weights.length === 0) return null;
+    const w = Number(weights[0].weight_kg);
+    return Number.isFinite(w) ? w : null;
+  }, [weights]);
   const activeLossGoal = useMemo(
     () =>
       weightGoal && isActiveLossWeightGoal(weightGoal, currentWeightKg) ? weightGoal : null,
@@ -594,6 +601,7 @@ export default function CaloriesPage() {
           defaultDate={presetDate}
           editBurn={editingBurn}
           onSaved={load}
+          latestWeightKg={latestWeightKg}
         />
       </div>
     </div>
