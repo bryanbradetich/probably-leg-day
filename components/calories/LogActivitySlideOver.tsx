@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { localISODate } from "@/lib/weight-helpers";
+import type { CalorieBurn } from "@/types";
 
 type Props = {
   open: boolean;
@@ -10,6 +11,7 @@ type Props = {
   userId: string;
   defaultActivityName?: string;
   defaultDate?: string;
+  editBurn?: CalorieBurn | null;
   onSaved: () => void;
 };
 
@@ -19,6 +21,7 @@ export function LogActivitySlideOver({
   userId,
   defaultActivityName = "",
   defaultDate,
+  editBurn = null,
   onSaved,
 }: Props) {
   const [activityName, setActivityName] = useState("");
@@ -32,12 +35,20 @@ export function LogActivitySlideOver({
   useEffect(() => {
     if (!open) return;
     setErr(null);
+    if (editBurn) {
+      setActivityName(editBurn.activity_name ?? "");
+      setDuration(editBurn.duration_minutes == null ? "" : String(editBurn.duration_minutes));
+      setCalories(editBurn.calories_burned == null ? "" : String(editBurn.calories_burned));
+      setNotes(editBurn.notes ?? "");
+      setLoggedDate(editBurn.logged_date ?? localISODate());
+      return;
+    }
     setActivityName(defaultActivityName);
     setDuration("");
     setCalories("");
     setNotes("");
     setLoggedDate(defaultDate ?? localISODate());
-  }, [open, defaultActivityName, defaultDate]);
+  }, [open, defaultActivityName, defaultDate, editBurn]);
 
   if (!open) return null;
 
@@ -60,14 +71,16 @@ export function LogActivitySlideOver({
     setSaving(true);
     setErr(null);
     const supabase = createClient();
-    const { error: e } = await supabase.from("calorie_burns").insert({
-      user_id: userId,
+    const payload = {
       logged_date: loggedDate,
       activity_name: name,
       calories_burned: cal,
       duration_minutes: dur,
       notes: notes.trim() || null,
-    });
+    };
+    const { error: e } = editBurn
+      ? await supabase.from("calorie_burns").update(payload).eq("id", editBurn.id).eq("user_id", userId)
+      : await supabase.from("calorie_burns").insert({ user_id: userId, ...payload });
     setSaving(false);
     if (e) {
       setErr(e.message);
@@ -86,7 +99,7 @@ export function LogActivitySlideOver({
       >
         <div className="flex items-center justify-between border-b border-theme-border px-4 py-3">
           <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-            Log activity
+            {editBurn ? "Edit Activity" : "Log activity"}
           </h2>
           <button
             type="button"

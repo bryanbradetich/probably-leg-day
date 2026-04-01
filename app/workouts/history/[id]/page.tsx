@@ -137,6 +137,21 @@ export default function WorkoutHistoryDetailPage() {
     return acc;
   }, {} as Record<string, SetRow[]>);
 
+  function sideBadge(side: unknown) {
+    const s = typeof side === "string" ? side : null;
+    if (s !== "left" && s !== "right") return null;
+    const label = s === "left" ? "L" : "R";
+    const bg = s === "left" ? "var(--chart-primary)" : "var(--success)";
+    return (
+      <span
+        className="ml-2 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+        style={{ backgroundColor: bg, color: "var(--on-accent)" }}
+      >
+        {label}
+      </span>
+    );
+  }
+
   if (loading || !log) {
     return (
       <div className="min-h-screen bg-theme-bg flex items-center justify-center text-theme-text-muted">
@@ -233,7 +248,12 @@ export default function WorkoutHistoryDetailPage() {
                         >
                           <td className="py-2 pr-4">{row.set_number}</td>
                           <td className="py-2 pr-4">{row.reps ?? "—"}</td>
-                          <td className="py-2 pr-4">{formatWeight(row.weight_kg)}</td>
+                          <td className="py-2 pr-4">
+                            <span className="inline-flex items-center">
+                              {formatWeight(row.weight_kg)}
+                              {sideBadge((row as unknown as { side?: unknown }).side)}
+                            </span>
+                          </td>
                           <td className="py-2 pr-4">
                             {row.duration_seconds != null
                               ? `${row.duration_seconds}s`

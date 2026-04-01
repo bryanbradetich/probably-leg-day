@@ -40,6 +40,7 @@ const navLinks: { href?: string; label: string; subLinks?: { href: string; label
     subLinks: [{ href: "/settings/themes", label: "Themes" }],
   },
   { href: "/reports", label: "Reports" },
+  { href: "/help", label: "Help" },
 ];
 
 function subLinkIsActive(pathname: string | null | undefined, href: string): boolean {

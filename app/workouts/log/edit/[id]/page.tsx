@@ -16,6 +16,8 @@ import type {
 type SetEntry = {
   reps: number | null;
   weight_kg: number | null;
+  weight_kg_left: number | null;
+  weight_kg_right: number | null;
   duration_seconds: number | null;
   rpe: number | null;
 };
@@ -30,12 +32,17 @@ type LogExerciseEntry = {
   };
   sets: SetEntry[];
   weightLoggingChoice?: "per_hand" | "total";
+  logPerSide?: boolean;
 };
 
 function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function isPerSideEligible(ex: Exercise): boolean {
+  return ex.type === "reps_sets" && (ex.equipment === "dumbbell" || ex.equipment === "cable");
 }
 
 export default function EditWorkoutPage() {
@@ -143,14 +150,34 @@ export default function EditWorkoutPage() {
             } as Exercise,
             sets: [],
             weightLoggingChoice: (first.weight_logging_choice as "per_hand" | "total") ?? undefined,
+            logPerSide: false,
           };
         }
-        const sets: SetEntry[] = group.map((r) => ({
-          reps: r.reps,
-          weight_kg: r.weight_kg,
-          duration_seconds: r.duration_seconds,
-          rpe: r.rpe,
-        }));
+        const bySet = new Map<number, WorkoutLogExercise[]>();
+        for (const r of group) {
+          const sn = r.set_number ?? 1;
+          if (!bySet.has(sn)) bySet.set(sn, []);
+          bySet.get(sn)!.push(r);
+        }
+        const sortedSetNumbers = Array.from(bySet.keys()).sort((a, b) => a - b);
+        const sets: SetEntry[] = sortedSetNumbers.map((sn) => {
+          const rows = bySet.get(sn)!;
+          const left = rows.find((x) => (x as unknown as { side?: string }).side === "left");
+          const right = rows.find((x) => (x as unknown as { side?: string }).side === "right");
+          const both = rows.find((x) => (x as unknown as { side?: string }).side === "both") ?? rows[0];
+          return {
+            reps: both.reps,
+            weight_kg: both.weight_kg,
+            weight_kg_left: left?.weight_kg ?? null,
+            weight_kg_right: right?.weight_kg ?? null,
+            duration_seconds: both.duration_seconds,
+            rpe: both.rpe,
+          };
+        });
+        const logPerSide = group.some((x) => {
+          const s = (x as unknown as { side?: string }).side;
+          return s === "left" || s === "right";
+        });
         return {
           exercise: ex,
           sets,
@@ -158,6 +185,7 @@ export default function EditWorkoutPage() {
             ex.weight_logging === "user_choice"
               ? (first.weight_logging_choice as "per_hand" | "total") ?? "total"
               : undefined,
+          logPerSide: logPerSide && isPerSideEligible(ex),
         };
       });
       setLogEntries(entries);
@@ -189,6 +217,8 @@ export default function EditWorkoutPage() {
                 {
                   reps: null,
                   weight_kg: null,
+                  weight_kg_left: null,
+                  weight_kg_right: null,
                   duration_seconds: null,
                   rpe: null,
                 },
@@ -256,6 +286,7 @@ export default function EditWorkoutPage() {
         sets: [],
         weightLoggingChoice:
           exercise.weight_logging === "user_choice" ? "total" : undefined,
+        logPerSide: false,
       },
     ]);
     setPickerOpen(false);
@@ -302,25 +333,58 @@ export default function EditWorkoutPage() {
       duration_seconds: number | null;
       rpe: number | null;
       weight_logging_choice: string | null;
+      side: "left" | "right" | "both";
     }[] = [];
     let orderIndex = 1;
     for (const entry of logEntries) {
       for (let s = 0; s < entry.sets.length; s++) {
         const set = entry.sets[s];
-        toInsert.push({
-          workout_log_id: id,
-          exercise_id: entry.exercise.id,
-          order_index: orderIndex,
-          set_number: toPositiveInt(s + 1, 1),
-          reps: toIntNull(set.reps),
-          weight_kg: toNumNull(set.weight_kg),
-          duration_seconds: toIntNull(set.duration_seconds),
-          rpe: toRpe(set.rpe),
-          weight_logging_choice:
-            entry.exercise.weight_logging === "user_choice"
-              ? entry.weightLoggingChoice ?? null
-              : null,
-        });
+        const setNumber = toPositiveInt(s + 1, 1);
+        const choice =
+          entry.exercise.weight_logging === "user_choice"
+            ? entry.weightLoggingChoice ?? null
+            : null;
+        if (entry.logPerSide && isPerSideEligible(entry.exercise)) {
+          toInsert.push(
+            {
+              workout_log_id: id,
+              exercise_id: entry.exercise.id,
+              order_index: orderIndex,
+              set_number: setNumber,
+              reps: toIntNull(set.reps),
+              weight_kg: toNumNull(set.weight_kg_left),
+              duration_seconds: toIntNull(set.duration_seconds),
+              rpe: toRpe(set.rpe),
+              weight_logging_choice: choice,
+              side: "left",
+            },
+            {
+              workout_log_id: id,
+              exercise_id: entry.exercise.id,
+              order_index: orderIndex,
+              set_number: setNumber,
+              reps: toIntNull(set.reps),
+              weight_kg: toNumNull(set.weight_kg_right),
+              duration_seconds: toIntNull(set.duration_seconds),
+              rpe: toRpe(set.rpe),
+              weight_logging_choice: choice,
+              side: "right",
+            }
+          );
+        } else {
+          toInsert.push({
+            workout_log_id: id,
+            exercise_id: entry.exercise.id,
+            order_index: orderIndex,
+            set_number: setNumber,
+            reps: toIntNull(set.reps),
+            weight_kg: toNumNull(set.weight_kg),
+            duration_seconds: toIntNull(set.duration_seconds),
+            rpe: toRpe(set.rpe),
+            weight_logging_choice: choice,
+            side: "both",
+          });
+        }
       }
       orderIndex += 1;
     }
@@ -570,6 +634,43 @@ export default function EditWorkoutPage() {
                   Remove
                 </button>
               </div>
+              {isPerSideEligible(entry.exercise) && (
+                <div className="mt-1 flex items-center gap-2 text-xs text-theme-text-muted">
+                  <span>Log per side</span>
+                  <button
+                    type="button"
+                    aria-pressed={!!entry.logPerSide}
+                    onClick={() =>
+                      setLogEntries((prev) =>
+                        prev.map((e, i) =>
+                          i === exIndex
+                            ? {
+                                ...e,
+                                logPerSide: !e.logPerSide,
+                                sets: e.sets.map((s) =>
+                                  !e.logPerSide
+                                    ? { ...s, weight_kg_left: s.weight_kg, weight_kg_right: s.weight_kg, weight_kg: null }
+                                    : { ...s, weight_kg: s.weight_kg_left ?? s.weight_kg_right ?? null, weight_kg_left: null, weight_kg_right: null }
+                                ),
+                              }
+                            : e
+                        )
+                      )
+                    }
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full border border-theme-border transition ${
+                      entry.logPerSide ? "bg-theme-accent/30" : "bg-theme-surface/60"
+                    }`}
+                    style={{ backgroundColor: entry.logPerSide ? "var(--accent)" : "var(--input-bg)" }}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full transition ${
+                        entry.logPerSide ? "translate-x-4" : "translate-x-0.5"
+                      }`}
+                      style={{ backgroundColor: "var(--surface)" }}
+                    />
+                  </button>
+                </div>
+              )}
               {entry.templateTarget && (
                 <p className="mt-0.5 text-sm text-theme-text-muted">
                   Target: {entry.templateTarget.target_sets} sets
@@ -632,26 +733,66 @@ export default function EditWorkoutPage() {
                           }
                           className="h-10 w-20 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
                         />
-                        <input
-                          type="number"
-                          step="0.5"
-                          placeholder="Weight"
-                          value={kgToLbs(set.weight_kg) ?? ""}
-                          onChange={(e) =>
-                            updateSet(
-                              exIndex,
-                              setIndex,
-                              "weight_kg",
-                              lbsToKg(
-                                e.target.value === ""
-                                  ? null
-                                  : parseFloat(e.target.value)
-                              )
-                            )
-                          }
-                          className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
-                        />
-                        <span className="text-theme-text-muted">lbs</span>
+                        {entry.logPerSide && isPerSideEligible(entry.exercise) ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[11px] font-medium text-theme-text-muted">L</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                placeholder="—"
+                                value={kgToLbs(set.weight_kg_left) ?? ""}
+                                onChange={(e) =>
+                                  updateSet(
+                                    exIndex,
+                                    setIndex,
+                                    "weight_kg_left",
+                                    lbsToKg(e.target.value === "" ? null : parseFloat(e.target.value))
+                                  )
+                                }
+                                className="h-10 w-20 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
+                              />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[11px] font-medium text-theme-text-muted">R</span>
+                              <input
+                                type="number"
+                                step="0.5"
+                                placeholder="—"
+                                value={kgToLbs(set.weight_kg_right) ?? ""}
+                                onChange={(e) =>
+                                  updateSet(
+                                    exIndex,
+                                    setIndex,
+                                    "weight_kg_right",
+                                    lbsToKg(e.target.value === "" ? null : parseFloat(e.target.value))
+                                  )
+                                }
+                                className="h-10 w-20 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
+                              />
+                            </div>
+                            <span className="text-theme-text-muted">lbs</span>
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="number"
+                              step="0.5"
+                              placeholder="Weight"
+                              value={kgToLbs(set.weight_kg) ?? ""}
+                              onChange={(e) =>
+                                updateSet(
+                                  exIndex,
+                                  setIndex,
+                                  "weight_kg",
+                                  lbsToKg(e.target.value === "" ? null : parseFloat(e.target.value))
+                                )
+                              }
+                              className="h-10 w-24 rounded-lg border border-theme-border bg-theme-surface px-2 text-center text-theme-text-primary"
+                            />
+                            <span className="text-theme-text-muted">lbs</span>
+                          </>
+                        )}
                       </>
                     ) : (
                       <input

@@ -69,6 +69,7 @@ export default function CaloriesPage() {
   const [logOpen, setLogOpen] = useState(false);
   const [presetActivity, setPresetActivity] = useState("");
   const [presetDate, setPresetDate] = useState<string | undefined>(undefined);
+  const [editingBurn, setEditingBurn] = useState<CalorieBurn | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -261,8 +262,16 @@ export default function CaloriesPage() {
   };
 
   const openLog = (name?: string, date?: string) => {
+    setEditingBurn(null);
     setPresetActivity(name ?? "");
     setPresetDate(date);
+    setLogOpen(true);
+  };
+
+  const openEdit = (burn: CalorieBurn) => {
+    setEditingBurn(burn);
+    setPresetActivity("");
+    setPresetDate(undefined);
     setLogOpen(true);
   };
 
@@ -470,13 +479,22 @@ export default function CaloriesPage() {
                           {row.notes ? ` · ${row.notes}` : ""}
                         </p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => deleteBurn(row.id)}
-                        className="text-sm font-medium text-theme-danger hover:underline"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(row)}
+                          className="text-sm font-medium text-theme-accent hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteBurn(row.id)}
+                          className="text-sm font-medium text-theme-danger hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -567,10 +585,14 @@ export default function CaloriesPage() {
 
         <LogActivitySlideOver
           open={logOpen}
-          onClose={() => setLogOpen(false)}
+          onClose={() => {
+            setLogOpen(false);
+            setEditingBurn(null);
+          }}
           userId={user.id}
           defaultActivityName={presetActivity}
           defaultDate={presetDate}
+          editBurn={editingBurn}
           onSaved={load}
         />
       </div>
