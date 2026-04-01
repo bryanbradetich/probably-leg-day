@@ -62,6 +62,9 @@ export default function EditWorkoutPage() {
   const restTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [removeExercisePromptId, setRemoveExercisePromptId] = useState<
+    string | null
+  >(null);
   const completedAtRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -239,8 +242,9 @@ export default function EditWorkoutPage() {
     );
   }
 
-  function removeExercise(exerciseIndex: number) {
-    setLogEntries((prev) => prev.filter((_, i) => i !== exerciseIndex));
+  function confirmRemoveExercise(exerciseId: string) {
+    setLogEntries((prev) => prev.filter((e) => e.exercise.id !== exerciseId));
+    setRemoveExercisePromptId(null);
   }
 
   function updateSet(
@@ -623,16 +627,45 @@ export default function EditWorkoutPage() {
               key={`${entry.exercise.id}-${exIndex}`}
               className="rounded-xl border border-theme-border bg-theme-surface/50 p-4"
             >
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-semibold text-theme-text-primary">{entry.exercise.name}</p>
-                <button
-                  type="button"
-                  onClick={() => removeExercise(exIndex)}
-                  className="rounded p-1 text-theme-text-muted hover:bg-theme-border hover:text-red-400"
-                  aria-label="Remove exercise"
-                >
-                  Remove
-                </button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                <p className="min-w-0 flex-1 font-semibold text-theme-text-primary">
+                  {entry.exercise.name}
+                </p>
+                {removeExercisePromptId === entry.exercise.id ? (
+                  <div className="shrink-0 rounded-lg border border-theme-border bg-theme-surface/80 px-3 py-2 text-sm sm:max-w-xs sm:text-right">
+                    <p className="text-theme-text-muted">
+                      Remove {entry.exercise.name} from this workout?
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setRemoveExercisePromptId(null)}
+                        className="rounded-md px-2 py-1 text-theme-text-muted hover:bg-theme-border/80 hover:text-theme-text-primary"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => confirmRemoveExercise(entry.exercise.id)}
+                        className="rounded-md px-2 py-1 font-medium hover:opacity-90"
+                        style={{ color: "var(--danger)" }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setRemoveExercisePromptId(entry.exercise.id)
+                    }
+                    className="shrink-0 self-start text-xs font-medium opacity-80 hover:opacity-100 sm:self-auto"
+                    style={{ color: "var(--danger)" }}
+                  >
+                    Remove exercise
+                  </button>
+                )}
               </div>
               {isPerSideEligible(entry.exercise) && (
                 <div className="mt-1 flex items-center gap-2 text-xs text-theme-text-muted">

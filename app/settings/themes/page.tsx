@@ -51,8 +51,11 @@ export default function ThemesSettingsPage() {
                   style={{ backgroundColor: t.preview.bg }}
                 >
                   <div
-                    className="h-10 flex-1 rounded-md border border-white/10"
-                    style={{ backgroundColor: t.preview.surface }}
+                    className="h-10 flex-1 rounded-md border"
+                    style={{
+                      backgroundColor: t.preview.surface,
+                      borderColor: t.preview.surfaceBorder ?? "rgb(255 255 255 / 0.1)",
+                    }}
                     title="Surface"
                   />
                   <div
