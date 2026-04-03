@@ -23,7 +23,17 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { ChartCard, ChartTooltip, CHART } from "@/components/charts";
 import { scaledNutrients, sumNutrients, formatKcal, macroCaloriesFromGrams } from "@/lib/food-helpers";
 import { addDays, mondayOfWeek, localISODate, formatShortDate, dayOfWeekLabel } from "@/lib/weight-helpers";
-import type { DailyFoodLogWithFood, NutritionGoal } from "@/types";
+import type { DailyFoodLogWithFood, DailyWeight, NutritionGoal, ProfileCalorieFields, WeightGoal } from "@/types";
+import {
+  computeBmrTdeeForDate,
+  profileBmrFieldsComplete,
+  weightForDate,
+} from "@/lib/calorie-helpers";
+import {
+  getDynamicCaloricTarget,
+  isActiveLossWeightGoal,
+  nutritionCalorieMode,
+} from "@/lib/calories";
 
 const MACRO_COLORS = {
   protein: "var(--macro-protein)",
@@ -39,6 +49,10 @@ export default function FoodWeeklyPage() {
   const [goal, setGoal] = useState<NutritionGoal | null>(null);
   const [weekMonday, setWeekMonday] = useState(() => mondayOfWeek(localISODate()));
   const [logs, setLogs] = useState<DailyFoodLogWithFood[]>([]);
+  const [profileCal, setProfileCal] = useState<ProfileCalorieFields | null>(null);
+  const [weights, setWeights] = useState<DailyWeight[]>([]);
+  const [weightGoal, setWeightGoal] = useState<WeightGoal | null>(null);
+  const [weekBurns, setWeekBurns] = useState<{ logged_date: string; calories_burned: number }[]>([]);
 
   const weekEnd = useMemo(() => addDays(weekMonday, 6), [weekMonday]);
 
@@ -55,22 +69,72 @@ export default function FoodWeeklyPage() {
     setUserId(user.id);
     setError(null);
 
-    const { data: g } = await supabase.from("nutrition_goals").select("*").eq("user_id", user.id).maybeSingle();
-    setGoal(g as NutritionGoal | null);
+    const [
+      { data: g, error: gErr },
+      { data, error: e },
+      { data: prof, error: pErr },
+      { data: dw, error: wErr },
+      { data: wg, error: wgErr },
+      { data: burns, error: bErr },
+    ] = await Promise.all([
+      supabase.from("nutrition_goals").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("daily_food_logs")
+        .select("*, foods(*)")
+        .eq("user_id", user.id)
+        .gte("logged_date", weekMonday)
+        .lte("logged_date", weekEnd)
+        .order("logged_date"),
+      supabase
+        .from("profiles")
+        .select("height_cm, date_of_birth, biological_sex, activity_level, custom_activity_multiplier")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase
+        .from("daily_weights")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("logged_date", { ascending: false })
+        .limit(500),
+      supabase.from("weight_goals").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("calorie_burns")
+        .select("logged_date, calories_burned")
+        .eq("user_id", user.id)
+        .gte("logged_date", weekMonday)
+        .lte("logged_date", weekEnd),
+    ]);
 
-    const { data, error: e } = await supabase
-      .from("daily_food_logs")
-      .select("*, foods(*)")
-      .eq("user_id", user.id)
-      .gte("logged_date", weekMonday)
-      .lte("logged_date", weekEnd)
-      .order("logged_date");
-    if (e) {
-      setError(e.message);
+    const firstErr = gErr ?? e ?? pErr ?? wErr ?? wgErr ?? bErr;
+    if (firstErr) {
+      setError(firstErr.message);
       setLoading(false);
       return;
     }
+
+    setGoal(g as NutritionGoal | null);
     setLogs((data ?? []) as DailyFoodLogWithFood[]);
+    const pr = prof as Partial<Omit<ProfileCalorieFields, "id">> | null;
+    setProfileCal(
+      pr
+        ? {
+            id: user.id,
+            height_cm: pr.height_cm ?? null,
+            date_of_birth: pr.date_of_birth ?? null,
+            biological_sex: (pr.biological_sex as ProfileCalorieFields["biological_sex"]) ?? null,
+            activity_level: (pr.activity_level as ProfileCalorieFields["activity_level"]) ?? "sedentary",
+            custom_activity_multiplier: pr.custom_activity_multiplier ?? null,
+          }
+        : null
+    );
+    setWeights((dw ?? []) as DailyWeight[]);
+    setWeightGoal((wg ?? null) as WeightGoal | null);
+    setWeekBurns(
+      (burns ?? []).map((r) => ({
+        logged_date: (r as { logged_date: string }).logged_date,
+        calories_burned: Number((r as { calories_burned: number }).calories_burned),
+      }))
+    );
     setLoading(false);
   }, [router, weekMonday, weekEnd]);
 
@@ -90,8 +154,16 @@ export default function FoodWeeklyPage() {
     return m;
   }, [logs, weekMonday]);
 
+  const burnsByDate = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const r of weekBurns) {
+      m[r.logged_date] = (m[r.logged_date] ?? 0) + r.calories_burned;
+    }
+    return m;
+  }, [weekBurns]);
+
   const dayRows = useMemo(() => {
-    const calGoal = goal ? Number(goal.daily_calories) : 0;
+    const profileOk = profileCal && profileBmrFieldsComplete(profileCal);
     const rows: {
       iso: string;
       label: string;
@@ -99,14 +171,47 @@ export default function FoodWeeklyPage() {
       protein_g: number;
       carbs_g: number;
       fat_g: number;
+      calorieTarget: number;
       vsGoal: number;
       over: boolean;
+      totalBurn: number | null;
+      net: number | null;
+      hasFoodLogs: boolean;
     }[] = [];
     for (let i = 0; i < 7; i++) {
       const iso = addDays(weekMonday, i);
       const dayLogs = byDay[iso] ?? [];
+      const hasFoodLogs = dayLogs.length > 0;
       const t = sumNutrients(dayLogs.map((r) => scaledNutrients(r.foods, Number(r.quantity), r.serving_unit)));
-      const vs = calGoal > 0 ? t.calories - calGoal : 0;
+      const energy = profileOk ? computeBmrTdeeForDate(profileCal, weights, iso) : null;
+      const tdee = energy?.tdee ?? null;
+      const extraBurns = burnsByDate[iso] ?? 0;
+      const totalBurn =
+        tdee != null && Number.isFinite(tdee) ? tdee + extraBurns : null;
+
+      let calorieTarget = 0;
+      if (goal) {
+        const mode = nutritionCalorieMode(goal);
+        const tdeeNum = tdee ?? 0;
+        const wKg = weightForDate(weights, iso)?.weightKg ?? null;
+        if (mode === "dynamic" && tdeeNum > 0) {
+          calorieTarget = getDynamicCaloricTarget({
+            TDEE: tdeeNum,
+            additionalBurns: extraBurns,
+            activeWeightGoal:
+              weightGoal && isActiveLossWeightGoal(weightGoal, wKg) ? weightGoal : null,
+            currentWeightKg: wKg,
+            nutritionGoal: goal,
+          });
+        } else {
+          calorieTarget = Number(goal.daily_calories);
+        }
+      }
+
+      const vs = goal && calorieTarget > 0 ? t.calories - calorieTarget : 0;
+      const over = !!(goal && calorieTarget > 0 && t.calories > calorieTarget + 0.5);
+      const net = totalBurn != null ? t.calories - totalBurn : null;
+
       rows.push({
         iso,
         label: dayOfWeekLabel(iso),
@@ -114,12 +219,16 @@ export default function FoodWeeklyPage() {
         protein_g: t.protein_g,
         carbs_g: t.carbs_g,
         fat_g: t.fat_g,
+        calorieTarget,
         vsGoal: vs,
-        over: calGoal > 0 && t.calories > calGoal + 0.5,
+        over,
+        totalBurn,
+        net,
+        hasFoodLogs,
       });
     }
     return rows;
-  }, [byDay, weekMonday, goal]);
+  }, [byDay, weekMonday, goal, profileCal, weights, weightGoal, burnsByDate]);
 
   const weekTotals = useMemo(() => {
     return sumNutrients(
@@ -137,15 +246,24 @@ export default function FoodWeeklyPage() {
     };
   }, [weekTotals]);
 
+  const weekAvgNet = useMemo(() => {
+    const vals: number[] = [];
+    for (const r of dayRows) {
+      if (!r.hasFoodLogs || r.net == null) continue;
+      vals.push(r.net);
+    }
+    if (vals.length === 0) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }, [dayRows]);
+
   const barData = useMemo(() => {
-    const g = goal ? Number(goal.daily_calories) : 0;
     return dayRows.map((r) => ({
       name: r.label.slice(0, 3),
       fullDate: r.iso,
       calories: Math.round(r.calories),
-      goal: Math.round(g),
+      goal: Math.round(r.calorieTarget),
     }));
-  }, [dayRows, goal]);
+  }, [dayRows]);
 
   const pieData = useMemo(() => {
     const { protein_cal, carbs_cal, fat_cal } = macroCaloriesFromGrams(
@@ -179,7 +297,10 @@ export default function FoodWeeklyPage() {
   return (
     <div className="min-h-screen bg-theme-bg text-theme-text-primary">
       <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-        <PageHeader title="Weekly summary" description="Macros by day and week vs your calorie goal." />
+        <PageHeader
+          title="Weekly summary"
+          description="Macros by day, net calorie balance (intake vs TDEE + logged activity), and intake vs your calorie target."
+        />
 
         <div className="mt-4 flex flex-wrap gap-3 text-sm">
           <Link href="/food" className="font-medium text-theme-accent hover:underline">
@@ -230,7 +351,7 @@ export default function FoodWeeklyPage() {
         </div>
 
         <div className="mt-8 overflow-x-auto rounded-xl border border-theme-border">
-          <table className="w-full min-w-[640px] text-left text-sm">
+          <table className="w-full min-w-[760px] text-left text-sm">
             <thead>
               <tr className="border-b border-theme-border bg-theme-surface text-theme-text-muted">
                 <th className="px-3 py-2 font-semibold">Day</th>
@@ -238,6 +359,7 @@ export default function FoodWeeklyPage() {
                 <th className="px-3 py-2 font-semibold">Protein</th>
                 <th className="px-3 py-2 font-semibold">Carbs</th>
                 <th className="px-3 py-2 font-semibold">Fat</th>
+                <th className="px-3 py-2 font-semibold">Net (in − burned)</th>
                 {goal && <th className="px-3 py-2 font-semibold">vs goal</th>}
               </tr>
             </thead>
@@ -257,17 +379,28 @@ export default function FoodWeeklyPage() {
                   <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-protein">{r.protein_g.toFixed(0)}g</td>
                   <td className="px-3 py-2 font-bold tabular-nums text-theme-macro-carbs">{r.carbs_g.toFixed(0)}g</td>
                   <td className="px-3 py-2 font-bold tabular-nums text-theme-accent">{r.fat_g.toFixed(0)}g</td>
+                  <td className="px-3 py-2 font-bold tabular-nums">
+                    {r.net != null && Math.abs(r.net) >= 0.5 ? (
+                      <span className={r.net < 0 ? "text-theme-success" : "text-theme-accent"}>
+                        {r.net < 0 ? `-${formatKcal(Math.abs(r.net))}` : `+${formatKcal(r.net)}`}
+                      </span>
+                    ) : (
+                      <span className="text-theme-text-muted">—</span>
+                    )}
+                  </td>
                   {goal && (
                     <td
                       className={`px-3 py-2 font-bold tabular-nums ${
                         r.over ? "text-theme-danger" : "text-theme-success"
                       }`}
                     >
-                      {r.vsGoal > 0.5
-                        ? `+${formatKcal(r.vsGoal)} over`
-                        : r.vsGoal < -0.5
-                          ? `${formatKcal(Math.abs(r.vsGoal))} under`
-                          : "At goal"}
+                      {r.calorieTarget > 0
+                        ? r.vsGoal > 0.5
+                          ? `+${formatKcal(r.vsGoal)} over`
+                          : r.vsGoal < -0.5
+                            ? `${formatKcal(Math.abs(r.vsGoal))} under`
+                            : "At goal"
+                        : "—"}
                     </td>
                   )}
                 </tr>
@@ -278,6 +411,15 @@ export default function FoodWeeklyPage() {
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-protein">{weekAvg.protein_g.toFixed(0)}g</td>
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-carbs">{weekAvg.carbs_g.toFixed(0)}g</td>
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-accent">{weekAvg.fat_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 font-bold tabular-nums">
+                  {weekAvgNet != null && Math.abs(weekAvgNet) >= 0.5 ? (
+                    <span className={weekAvgNet < 0 ? "text-theme-success" : "text-theme-accent"}>
+                      {weekAvgNet < 0 ? `-${formatKcal(Math.abs(weekAvgNet))}` : `+${formatKcal(weekAvgNet)}`}
+                    </span>
+                  ) : (
+                    <span className="text-theme-text-muted">—</span>
+                  )}
+                </td>
                 {goal && <td className="px-3 py-3 text-theme-text-muted">—</td>}
               </tr>
               <tr className="bg-theme-surface">
@@ -286,6 +428,7 @@ export default function FoodWeeklyPage() {
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-protein">{weekTotals.protein_g.toFixed(0)}g</td>
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-macro-carbs">{weekTotals.carbs_g.toFixed(0)}g</td>
                 <td className="px-3 py-3 font-bold tabular-nums text-theme-accent">{weekTotals.fat_g.toFixed(0)}g</td>
+                <td className="px-3 py-3 text-theme-text-muted">—</td>
                 {goal && <td className="px-3 py-3 text-theme-text-muted">—</td>}
               </tr>
             </tbody>
