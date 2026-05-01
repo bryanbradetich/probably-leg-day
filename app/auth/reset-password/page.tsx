@@ -6,16 +6,17 @@ import { createClient } from "@/lib/supabase";
 
 const APP_NAME = "Probably Leg Day";
 
+type UiMode = "request" | "sent";
+
 export default function ResetPasswordPage() {
+  const [mode, setMode] = useState<UiMode>("request");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleRequestReset(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setSuccess(false);
 
     if (!email.trim()) {
       setError("Email is required.");
@@ -25,9 +26,10 @@ export default function ResetPasswordPage() {
     setLoading(true);
     const supabase = createClient();
 
+    const origin = window.location.origin;
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       email.trim(),
-      { redirectTo: `${window.location.origin}/auth/login` }
+      { redirectTo: `${origin}/auth/reset-password` }
     );
 
     if (resetError) {
@@ -36,7 +38,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setSuccess(true);
+    setMode("sent");
     setLoading(false);
   }
 
@@ -51,10 +53,11 @@ export default function ResetPasswordPage() {
             Reset your password
           </p>
 
-          {success ? (
+          {mode === "sent" && (
             <div className="mt-8 space-y-4">
               <div className="rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
-                Check your email for a link to reset your password. If you don&apos;t see it, check your spam folder.
+                Check your email for a link to reset your password. If you
+                don&apos;t see it, check your spam folder.
               </div>
               <Link
                 href="/auth/login"
@@ -63,45 +66,53 @@ export default function ResetPasswordPage() {
                 Back to log in
               </Link>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          )}
+
+          {mode === "request" && (
+            <>
               {error && (
-                <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                <div className="mt-8 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
                   {error}
                 </div>
               )}
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-theme-text-muted">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-theme-border bg-theme-input-bg px-4 py-3 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
-                  placeholder="you@example.com"
-                />
-              </div>
+              <form onSubmit={handleRequestReset} className="mt-8 space-y-5">
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-theme-text-muted"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1.5 w-full rounded-lg border border-theme-border bg-theme-input-bg px-4 py-3 text-theme-text-primary placeholder:text-theme-text-muted/70 focus:border-theme-accent focus:outline-none focus:ring-1 focus:ring-theme-accent"
+                    placeholder="you@example.com"
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-theme-accent px-4 py-3 font-semibold text-theme-on-accent transition hover:bg-theme-accent-hover disabled:opacity-50"
-              >
-                {loading ? "Sending…" : "Send reset link"}
-              </button>
-            </form>
-          )}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-lg bg-theme-accent px-4 py-3 font-semibold text-theme-on-accent transition hover:bg-theme-accent-hover disabled:opacity-50"
+                >
+                  {loading ? "Sending…" : "Send reset link"}
+                </button>
+              </form>
 
-          {!success && (
-            <p className="mt-6 text-center text-sm text-theme-text-muted">
-              <Link href="/auth/login" className="font-medium text-theme-accent hover:underline">
-                Back to log in
-              </Link>
-            </p>
+              <p className="mt-6 text-center text-sm text-theme-text-muted">
+                <Link
+                  href="/auth/login"
+                  className="font-medium text-theme-accent hover:underline"
+                >
+                  Back to log in
+                </Link>
+              </p>
+            </>
           )}
         </div>
       </div>

@@ -1,8 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routes that don't require auth: home and all auth pages (/auth, /auth/login, /auth/signup, etc.)
-const publicPaths = ["/", "/auth"];
+// Routes that don't require auth.
+const publicPaths = [
+  "/",
+  "/auth",
+  "/auth/login",
+  "/auth/signup",
+  "/auth/reset-password",
+  "/auth/confirm",
+  "/auth/update-password",
+];
 const authPath = "/auth";
 
 function isPublicPath(pathname: string): boolean {
