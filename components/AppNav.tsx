@@ -238,12 +238,12 @@ export function AppNav() {
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            className="fixed inset-0 z-40 bg-theme-bg/60 md:hidden"
             aria-hidden
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 right-0 top-14 z-50 border-b border-theme-border bg-theme-bg py-4 shadow-xl md:hidden">
-            <div className="flex flex-col gap-1 px-4">
+          <div className="absolute left-0 right-0 top-14 z-50 max-h-[80vh] overflow-y-auto overscroll-y-contain border-b border-theme-border bg-theme-bg shadow-xl md:hidden">
+            <div className="flex flex-col gap-1 px-4 pt-4 pb-[max(2.5rem,calc(1.25rem+env(safe-area-inset-bottom,0px)))]">
               {navLinks.map((link) => {
                 if (link.subLinks) {
                   return (
